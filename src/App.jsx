@@ -305,8 +305,8 @@ export default function App() {
         onRefresh={() => window.location.reload()}
       />
 
-      {/* Main Container */}
-      <main style={{ flex: 1, maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '16px' }}>
+      {/* Main Container - Full width to maximize screen usage and eliminate unnecessary scrollbars */}
+      <main style={{ flex: 1, width: '100%', margin: '0', padding: '16px 20px', boxSizing: 'border-box' }}>
         
         {/* Error Alert */}
         {error && (

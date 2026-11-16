@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const PRIORIDADES = [
   {
@@ -42,183 +42,83 @@ export default function BrandeoPriorityBadge({
   editable = true,
   style = {}
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const dropdownRef = useRef(null);
 
   const rawPrio = (equipo?.prioridadBrandeo || 'URGENTE').toUpperCase();
   const currentPrio = PRIORIDADES.find(p => p.id === rawPrio) || PRIORIDADES[0];
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const handleSelect = async (e, prioId) => {
+  const handleChange = async (e) => {
     e.stopPropagation();
-    e.preventDefault();
-    if (prioId === currentPrio.id) {
-      setIsOpen(false);
-      return;
-    }
+    const newPrio = e.target.value;
+    if (newPrio === currentPrio.id) return;
 
     if (onUpdatePriority) {
       try {
         setIsUpdating(true);
-        await onUpdatePriority(equipo.id, prioId);
+        if (onUpdatePriority.length === 1) {
+          await onUpdatePriority(newPrio);
+        } else {
+          await onUpdatePriority(equipo.id, newPrio);
+        }
       } catch (err) {
-        console.error('Error al actualizar prioridad:', err);
+        console.error('Error al actualizar prioridad de brandeo:', err);
       } finally {
         setIsUpdating(false);
-        setIsOpen(false);
       }
-    } else {
-      setIsOpen(false);
-    }
-  };
-
-  const handleToggle = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (editable) {
-      setIsOpen(prev => !prev);
     }
   };
 
   return (
     <div 
-      ref={dropdownRef} 
       style={{ 
         position: 'relative', 
-        display: 'inline-block', 
+        display: 'inline-flex', 
+        alignItems: 'center',
         verticalAlign: 'middle',
         marginLeft: '6px',
         ...style 
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Botón Badge */}
-      <button
-        type="button"
-        onClick={handleToggle}
+      <select
+        value={currentPrio.id}
+        onChange={handleChange}
         disabled={!editable || isUpdating}
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
-          padding: '2px 8px',
-          borderRadius: '8px',
+          appearance: 'none',
+          WebkitAppearance: 'none',
+          MozAppearance: 'none',
           backgroundColor: currentPrio.bg,
           color: currentPrio.color,
           border: `1px solid ${currentPrio.border}`,
+          borderRadius: '8px',
+          padding: '3px 22px 3px 8px',
           fontWeight: '800',
           fontSize: '0.72rem',
           letterSpacing: '0.03em',
           cursor: editable ? 'pointer' : 'default',
           boxShadow: currentPrio.shadow,
-          transition: 'all 0.15s ease',
           outline: 'none',
-          userSelect: 'none',
-          opacity: isUpdating ? 0.7 : 1
+          transition: 'all 0.15s ease',
+          opacity: isUpdating ? 0.7 : 1,
+          backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'right 6px center',
+          backgroundSize: '10px',
+          textAlign: 'left'
         }}
-        title={editable ? `Prioridad de Brandeo: ${currentPrio.label}. Clic para cambiar prioridad` : `Prioridad: ${currentPrio.label}`}
+        title="Prioridad de brandeo: Clic para delimitar entre Urgente, Medio o Bajo"
       >
-        <span>{currentPrio.icon}</span>
-        <span>{currentPrio.label}</span>
-        {editable && (
-          <span style={{ fontSize: '0.65rem', marginLeft: '1px', opacity: 0.85 }}>▾</span>
-        )}
-      </button>
-
-      {/* Popover desplegable */}
-      {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 4px)',
-          left: 0,
-          zIndex: 1000,
-          backgroundColor: 'var(--bg-card, #1e293b)',
-          borderRadius: '8px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12)',
-          padding: '4px',
-          minWidth: '160px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-          animation: 'fadeIn 0.15s ease'
-        }}>
-          <div style={{ 
-            padding: '4px 8px', 
-            fontSize: '0.65rem', 
-            textTransform: 'uppercase', 
-            color: 'var(--text-muted, #94a3b8)', 
-            fontWeight: '700',
-            letterSpacing: '0.05em',
-            borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-            marginBottom: '2px'
-          }}>
-            Delimitar Prioridad:
-          </div>
-
-          {PRIORIDADES.map(prio => {
-            const isSelected = prio.id === currentPrio.id;
-            return (
-              <button
-                key={prio.id}
-                type="button"
-                onClick={(e) => handleSelect(e, prio.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '6px 8px',
-                  borderRadius: '6px',
-                  backgroundColor: isSelected ? 'rgba(139, 92, 246, 0.2)' : 'transparent',
-                  border: isSelected ? `1px solid ${prio.bg}` : '1px solid transparent',
-                  color: 'var(--text-main, #ffffff)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'background-color 0.12s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{
-                    display: 'inline-block',
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: prio.bg
-                  }} />
-                  <span style={{ fontSize: '0.78rem', fontWeight: '700' }}>
-                    {prio.emoji} {prio.label}
-                  </span>
-                </div>
-                {isSelected && (
-                  <span style={{ fontSize: '0.75rem', color: '#4ade80', fontWeight: '800' }}>✓</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
+        <option value="URGENTE" style={{ backgroundColor: '#1e293b', color: '#c084fc', fontWeight: '700' }}>
+          🔥 URGENTE
+        </option>
+        <option value="MEDIO" style={{ backgroundColor: '#1e293b', color: '#fbbf24', fontWeight: '700' }}>
+          ⚡ MEDIO
+        </option>
+        <option value="BAJO" style={{ backgroundColor: '#1e293b', color: '#60a5fa', fontWeight: '700' }}>
+          🟢 BAJO
+        </option>
+      </select>
     </div>
   );
 }

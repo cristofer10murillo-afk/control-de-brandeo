@@ -61,30 +61,30 @@ export default function BrandeoTable({
 
   return (
     <>
-      {/* 1. DESKTOP VIEW: PANORAMIC TABLE MATCHING PHOTO 1 */}
-      <div className="card desktop-table-view" style={{ padding: 0, overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+      {/* 1. DESKTOP VIEW: PANORAMIC TABLE MATCHING PHOTO 1 (Full screen width, no unnecessary scrollbars) */}
+      <div className="card desktop-table-view desktop-table-card" style={{ padding: 0, width: '100%', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
           <thead style={{ backgroundColor: 'var(--table-header-bg)', color: '#ffffff' }}>
             <tr>
-              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <th style={{ padding: '11px 12px', width: '185px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Confirmación de Brandeo
               </th>
-              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <th style={{ padding: '11px 12px', minWidth: '170px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Equipo / Modelo
               </th>
-              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <th style={{ padding: '11px 12px', width: '110px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Activo
               </th>
-              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <th style={{ padding: '11px 12px', width: '120px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Serie
               </th>
-              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <th style={{ padding: '11px 12px', minWidth: '180px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Cliente
               </th>
-              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <th style={{ padding: '11px 12px', width: '130px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Lugar / Ubicación
               </th>
-              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <th style={{ padding: '11px 12px', width: '180px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Registro y Fecha / Hora
               </th>
             </tr>
@@ -118,34 +118,30 @@ export default function BrandeoTable({
                   }}
                 >
                   {/* Casilla de Confirmación */}
-                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', borderLeft }}>
+                  <td style={{ padding: '9px 12px', borderLeft }}>
                     {isPendiente ? (
                       <button
                         onClick={() => onConfirmBrandeo(eq)}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '8px',
-                          padding: '8px 14px',
+                          gap: '6px',
+                          padding: '6px 12px',
                           backgroundColor: '#8b5cf6',
                           color: '#ffffff',
                           border: 'none',
                           borderRadius: '8px',
-                          fontSize: '0.84rem',
+                          fontSize: '0.8rem',
                           fontWeight: '700',
                           cursor: 'pointer',
                           boxShadow: '0 2px 6px rgba(139, 92, 246, 0.35)',
-                          transition: 'all 0.15s ease'
+                          transition: 'all 0.15s ease',
+                          whiteSpace: 'nowrap'
                         }}
                         title="Haz clic aquí para confirmar que el brandeo de este equipo ha sido realizado"
                       >
-                        <input 
-                          type="checkbox" 
-                          readOnly 
-                          checked={false} 
-                          style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#ffffff' }} 
-                        />
-                        <span>✓ Confirmar Brandeo Realizado</span>
+                        <Check size={14} strokeWidth={3} />
+                        <span>Confirmar Brandeo</span>
                       </button>
                     ) : isBrandeado ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -159,7 +155,8 @@ export default function BrandeoTable({
                           color: 'var(--success)',
                           fontSize: '0.78rem',
                           fontWeight: '700',
-                          border: '1px solid var(--success)'
+                          border: '1px solid var(--success)',
+                          whiteSpace: 'nowrap'
                         }}>
                           <Check size={14} strokeWidth={3} />
                           Brandeo Realizado
@@ -190,9 +187,9 @@ export default function BrandeoTable({
                   </td>
 
                   {/* Equipo / Modelo */}
-                  <td style={{ padding: '12px 16px', fontWeight: '700', color: '#0284c7' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '0.92rem' }}>{eq.tipoEquipo || eq.modelo || 'Sin Tipo'}</span>
+                  <td style={{ padding: '9px 12px', fontWeight: '700', color: '#0284c7' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '0.9rem' }}>{eq.tipoEquipo || eq.modelo || 'Sin Tipo'}</span>
                       {isPendiente && (
                         <BrandeoPriorityBadge 
                           equipo={eq}
@@ -203,18 +200,18 @@ export default function BrandeoTable({
                   </td>
 
                   {/* Activo */}
-                  <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', fontWeight: '700' }}>
+                  <td style={{ padding: '9px 12px', fontFamily: 'var(--font-mono)', fontWeight: '700' }}>
                     {eq.activo || 'N/A'}
                   </td>
 
                   {/* Serie */}
-                  <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', fontWeight: '600' }}>
+                  <td style={{ padding: '9px 12px', fontFamily: 'var(--font-mono)', fontWeight: '600' }}>
                     {eq.serie || 'N/A'}
                   </td>
 
                   {/* Cliente */}
                   <td style={{ 
-                    padding: '12px 16px', 
+                    padding: '9px 12px', 
                     fontWeight: '700',
                     color: (eq.cliente || '').toUpperCase().includes('TBD') ? (theme === 'dark' ? '#4ade80' : '#15803d') : 'var(--text-main)'
                   }}>
@@ -222,7 +219,7 @@ export default function BrandeoTable({
                   </td>
 
                   {/* Lugar */}
-                  <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>
+                  <td style={{ padding: '9px 12px', color: 'var(--text-muted)' }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                       <MapPin size={13} color="var(--primary)" />
                       {eq.lugar || eq.ubicacion || 'Taller'}
@@ -230,24 +227,24 @@ export default function BrandeoTable({
                   </td>
 
                   {/* Registro y Fecha / Hora Exacta */}
-                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '9px 12px' }}>
                     {isPendiente ? (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#8b5cf6', fontWeight: '700', fontSize: '0.8rem' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#8b5cf6', fontWeight: '700', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
                         <Clock size={14} />
                         Falta Brandear
                       </span>
                     ) : isBrandeado ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span style={{ color: 'var(--success)', fontWeight: '800', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ color: 'var(--success)', fontWeight: '800', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
                           <Check size={13} /> {eq.fechaBrandeo || 'Completado'}
                         </span>
                         {eq.semanaBrandeo && (
-                          <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: '600' }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>
                             {eq.semanaBrandeo} ({eq.mesBrandeo || ''})
                           </span>
                         )}
                         {eq.usuarioBrandeo && (
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
                             <User size={11} /> {eq.usuarioBrandeo}
                           </span>
                         )}

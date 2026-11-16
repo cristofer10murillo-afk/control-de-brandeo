@@ -23,8 +23,9 @@ export default function BrandeoNavbar({
       boxShadow: 'var(--shadow-sm)'
     }}>
       <div style={{
-        maxWidth: '1440px',
-        margin: '0 auto',
+        width: '100%',
+        margin: '0',
+        padding: '0 4px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',

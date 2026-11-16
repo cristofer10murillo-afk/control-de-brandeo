@@ -270,6 +270,17 @@ body {
   display: block;
 }
 
+.desktop-table-card {
+  width: 100%;
+  overflow-x: auto;
+}
+
+@media (min-width: 900px) {
+  .desktop-table-card {
+    overflow-x: visible;
+  }
+}
+
 @media (max-width: 768px) {
   .mobile-cards-view {
     display: flex;
