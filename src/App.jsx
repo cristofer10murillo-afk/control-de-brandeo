@@ -27,6 +27,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('pendientes'); // 'pendientes' | 'brandeados' | 'reportes' | 'todos'
   const [tipoFiltro, setTipoFiltro] = useState('Todos');
+  const [prioridadFiltro, setPrioridadFiltro] = useState('TODAS'); // 'TODAS' | 'URGENTE' | 'MEDIO' | 'BAJO'
 
   // Confirmation Modal
   const [modalEquipo, setModalEquipo] = useState(null);
@@ -97,6 +98,20 @@ export default function App() {
     return equipos.filter(eq => eq.brandeoRealizado === true).length;
   }, [equipos]);
 
+  // Breakdown by priority for pending equipments
+  const { urgenteCount, medioCount, bajoCount } = useMemo(() => {
+    let u = 0, m = 0, b = 0;
+    equipos.forEach(eq => {
+      if (eq.requiereBrandeo === true) {
+        const p = (eq.prioridadBrandeo || 'URGENTE').toUpperCase();
+        if (p === 'MEDIO') m++;
+        else if (p === 'BAJO') b++;
+        else u++;
+      }
+    });
+    return { urgenteCount: u, medioCount: m, bajoCount: b };
+  }, [equipos]);
+
   const tiposDisponibles = useMemo(() => {
     const set = new Set();
     equipos.forEach(eq => {
@@ -113,6 +128,12 @@ export default function App() {
         if (!eq.requiereBrandeo) return false;
       } else if (activeTab === 'brandeados') {
         if (!eq.brandeoRealizado) return false;
+      }
+
+      // Prioridad filter (for pendientes or todos)
+      if (prioridadFiltro !== 'TODAS') {
+        const p = (eq.prioridadBrandeo || 'URGENTE').toUpperCase();
+        if (p !== prioridadFiltro) return false;
       }
 
       if (tipoFiltro !== 'Todos') {
@@ -132,7 +153,8 @@ export default function App() {
           eq.tecnico,
           eq.usuarioBrandeo,
           eq.fechaBrandeo,
-          eq.semanaBrandeo
+          eq.semanaBrandeo,
+          eq.prioridadBrandeo
         ]
           .filter(Boolean)
           .join(' ')
@@ -143,7 +165,7 @@ export default function App() {
 
       return true;
     });
-  }, [equipos, activeTab, tipoFiltro, searchTerm]);
+  }, [equipos, activeTab, tipoFiltro, prioridadFiltro, searchTerm]);
 
   // Launch confetti celebration
   const triggerConfetti = () => {
@@ -214,6 +236,21 @@ export default function App() {
     } catch (err) {
       console.error('Error toggling brandeo:', err);
       showToast('Error al actualizar.', 'danger');
+    }
+  };
+
+  // Change priority directly in Firebase
+  const handleUpdatePrioridad = async (id, nuevaPrioridad) => {
+    if (!db) return;
+    try {
+      await updateDoc(doc(db, 'equipos', id), {
+        prioridadBrandeo: nuevaPrioridad,
+        updatedAt: Date.now()
+      });
+      showToast(`Prioridad actualizada a ${nuevaPrioridad}`, 'info');
+    } catch (err) {
+      console.error('Error actualizando prioridad de brandeo:', err);
+      showToast('Error al actualizar la prioridad en Firebase', 'danger');
     }
   };
 
@@ -295,6 +332,9 @@ export default function App() {
           totalEquipos={equipos.length}
           pendientesCount={pendientesCount}
           brandeadosCount={brandeadosCount}
+          urgenteCount={urgenteCount}
+          medioCount={medioCount}
+          bajoCount={bajoCount}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
@@ -309,6 +349,11 @@ export default function App() {
           tipoFiltro={tipoFiltro}
           setTipoFiltro={setTipoFiltro}
           tiposDisponibles={tiposDisponibles}
+          prioridadFiltro={prioridadFiltro}
+          setPrioridadFiltro={setPrioridadFiltro}
+          urgenteCount={urgenteCount}
+          medioCount={medioCount}
+          bajoCount={bajoCount}
           onExportExcel={() => exportBrandeoToExcel(filteredEquipos, `Brandeo_${activeTab}`)}
         />
 
@@ -327,6 +372,7 @@ export default function App() {
             activeTab={activeTab}
             onConfirmBrandeo={handleOpenConfirmModal}
             onToggleRequiereBrandeo={handleToggleRequiereBrandeo}
+            onUpdatePrioridad={handleUpdatePrioridad}
             theme={theme}
           />
         )}

@@ -80,8 +80,18 @@ export default function ConfirmBrandeoModal({
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                   Equipo / Modelo:
                 </span>
-                <p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0284c7' }}>
-                  {equipo.tipoEquipo || equipo.modelo || 'N/A'}
+                <p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0284c7', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>{equipo.tipoEquipo || equipo.modelo || 'N/A'}</span>
+                  <span style={{
+                    padding: '1px 6px',
+                    borderRadius: '6px',
+                    backgroundColor: (equipo.prioridadBrandeo || 'URGENTE').toUpperCase() === 'MEDIO' ? '#f59e0b' : ((equipo.prioridadBrandeo || 'URGENTE').toUpperCase() === 'BAJO' ? '#3b82f6' : '#8b5cf6'),
+                    color: '#ffffff',
+                    fontSize: '0.7rem',
+                    fontWeight: '800'
+                  }}>
+                    🎨 {(equipo.prioridadBrandeo || 'URGENTE').toUpperCase()}
+                  </span>
                 </p>
               </div>
               <div>

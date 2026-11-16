@@ -5,6 +5,9 @@ export default function BrandeoStats({
   totalEquipos = 0,
   pendientesCount = 0,
   brandeadosCount = 0,
+  urgenteCount = 0,
+  medioCount = 0,
+  bajoCount = 0,
   activeTab,
   setActiveTab
 }) {
@@ -58,6 +61,19 @@ export default function BrandeoStats({
               requieren brandeo
             </span>
           </div>
+          {pendientesCount > 0 && (
+            <div style={{ display: 'flex', gap: '5px', marginTop: '6px', fontSize: '0.7rem', flexWrap: 'wrap' }}>
+              <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(139, 92, 246, 0.2)', color: '#c084fc', fontWeight: '800' }}>
+                🔥 {urgenteCount} Urgentes
+              </span>
+              <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', fontWeight: '800' }}>
+                ⚡ {medioCount} Medios
+              </span>
+              <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', fontWeight: '800' }}>
+                🟢 {bajoCount} Bajos
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

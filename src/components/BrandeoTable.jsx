@@ -13,12 +13,14 @@ import {
   Hash, 
   Layers 
 } from 'lucide-react';
+import BrandeoPriorityBadge from './BrandeoPriorityBadge';
 
 export default function BrandeoTable({
   equipos = [],
   activeTab = 'pendientes',
   onConfirmBrandeo,
   onToggleRequiereBrandeo,
+  onUpdatePrioridad,
   theme
 }) {
   if (equipos.length === 0) {
@@ -92,12 +94,15 @@ export default function BrandeoTable({
               const isBrandeado = eq.brandeoRealizado === true;
               const isPendiente = eq.requiereBrandeo === true;
 
+              const prio = (eq.prioridadBrandeo || 'URGENTE').toUpperCase();
+              const prioColor = prio === 'MEDIO' ? '#f59e0b' : (prio === 'BAJO' ? '#3b82f6' : '#8b5cf6');
+
               let rowBg = 'transparent';
               let borderLeft = '4px solid transparent';
 
               if (isPendiente) {
                 rowBg = theme === 'dark' ? '#2d184c' : '#f5f0ff';
-                borderLeft = '4px solid #8b5cf6';
+                borderLeft = `4px solid ${prioColor}`;
               } else if (isBrandeado) {
                 rowBg = theme === 'dark' ? 'rgba(16, 185, 129, 0.08)' : '#f0fdf4';
                 borderLeft = '4px solid #10b981';
@@ -189,16 +194,10 @@ export default function BrandeoTable({
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '0.92rem' }}>{eq.tipoEquipo || eq.modelo || 'Sin Tipo'}</span>
                       {isPendiente && (
-                        <span style={{
-                          fontSize: '0.7rem',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          backgroundColor: '#8b5cf6',
-                          color: '#ffffff',
-                          fontWeight: '800'
-                        }}>
-                          🎨 URGENTE
-                        </span>
+                        <BrandeoPriorityBadge 
+                          equipo={eq}
+                          onUpdatePriority={onUpdatePrioridad}
+                        />
                       )}
                     </div>
                   </td>
@@ -272,13 +271,16 @@ export default function BrandeoTable({
           const isBrandeado = eq.brandeoRealizado === true;
           const isPendiente = eq.requiereBrandeo === true;
 
+          const prio = (eq.prioridadBrandeo || 'URGENTE').toUpperCase();
+          const prioColor = prio === 'MEDIO' ? '#f59e0b' : (prio === 'BAJO' ? '#3b82f6' : '#8b5cf6');
+
           return (
             <div
               key={eq.id}
               className="card"
               style={{
                 padding: '16px',
-                borderLeft: isPendiente ? '6px solid #8b5cf6' : isBrandeado ? '6px solid #10b981' : '1px solid var(--border-color)',
+                borderLeft: isPendiente ? `6px solid ${prioColor}` : isBrandeado ? '6px solid #10b981' : '1px solid var(--border-color)',
                 backgroundColor: isPendiente ? (theme === 'dark' ? '#221138' : '#faf7ff') : 'var(--bg-card)',
                 boxShadow: 'var(--shadow-sm)'
               }}
@@ -294,16 +296,10 @@ export default function BrandeoTable({
                   </p>
                 </div>
                 {isPendiente && (
-                  <span style={{
-                    fontSize: '0.72rem',
-                    padding: '3px 8px',
-                    borderRadius: '6px',
-                    backgroundColor: '#8b5cf6',
-                    color: '#ffffff',
-                    fontWeight: '800'
-                  }}>
-                    🎨 REQUIERE BRANDEO
-                  </span>
+                  <BrandeoPriorityBadge 
+                    equipo={eq}
+                    onUpdatePriority={onUpdatePrioridad}
+                  />
                 )}
                 {isBrandeado && (
                   <span style={{

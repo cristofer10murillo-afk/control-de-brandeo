@@ -10,6 +10,11 @@ export default function BrandeoFilters({
   tipoFiltro,
   setTipoFiltro,
   tiposDisponibles = [],
+  prioridadFiltro = 'TODAS',
+  setPrioridadFiltro,
+  urgenteCount = 0,
+  medioCount = 0,
+  bajoCount = 0,
   onExportExcel
 }) {
   return (
@@ -183,7 +188,7 @@ export default function BrandeoFilters({
         </div>
       </div>
 
-      {/* Filter Row: Model / Type selector (shown for list tabs) */}
+      {/* Filter Row: Model / Type selector + Priority Filter */}
       {activeTab !== 'reportes' && (
         <div style={{
           display: 'flex',
@@ -192,21 +197,112 @@ export default function BrandeoFilters({
           flexWrap: 'wrap',
           gap: '12px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
-              Filtrar Modelo:
-            </span>
-            <select
-              className="form-control"
-              value={tipoFiltro}
-              onChange={(e) => setTipoFiltro(e.target.value)}
-              style={{ width: '220px', height: '36px', fontSize: '0.85rem' }}
-            >
-              <option value="Todos">Todos los modelos</option>
-              {tiposDisponibles.map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+            {/* Modelo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                Modelo:
+              </span>
+              <select
+                className="form-control"
+                value={tipoFiltro}
+                onChange={(e) => setTipoFiltro(e.target.value)}
+                style={{ width: '180px', height: '36px', fontSize: '0.85rem' }}
+              >
+                <option value="Todos">Todos los modelos</option>
+                {tiposDisponibles.map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Prioridad */}
+            {setPrioridadFiltro && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                  Prioridad:
+                </span>
+                <div style={{ display: 'inline-flex', gap: '3px', backgroundColor: 'var(--bg-surface)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setPrioridadFiltro('TODAS')}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '0.78rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '700',
+                      backgroundColor: prioridadFiltro === 'TODAS' ? 'var(--primary)' : 'transparent',
+                      color: prioridadFiltro === 'TODAS' ? '#ffffff' : 'var(--text-main)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    Todas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPrioridadFiltro('URGENTE')}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '0.78rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '700',
+                      backgroundColor: prioridadFiltro === 'URGENTE' ? '#8b5cf6' : 'transparent',
+                      color: prioridadFiltro === 'URGENTE' ? '#ffffff' : 'var(--text-main)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    🔥 Urgente {urgenteCount > 0 && `(${urgenteCount})`}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPrioridadFiltro('MEDIO')}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '0.78rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '700',
+                      backgroundColor: prioridadFiltro === 'MEDIO' ? '#f59e0b' : 'transparent',
+                      color: prioridadFiltro === 'MEDIO' ? '#ffffff' : 'var(--text-main)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    ⚡ Medio {medioCount > 0 && `(${medioCount})`}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPrioridadFiltro('BAJO')}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '0.78rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '700',
+                      backgroundColor: prioridadFiltro === 'BAJO' ? '#3b82f6' : 'transparent',
+                      color: prioridadFiltro === 'BAJO' ? '#ffffff' : 'var(--text-main)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    🟢 Bajo {bajoCount > 0 && `(${bajoCount})`}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
