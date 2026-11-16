@@ -16,7 +16,8 @@ import {
   ArrowRight, 
   RefreshCw,
   Search,
-  Filter
+  Filter,
+  RotateCcw
 } from 'lucide-react';
 import { getCurrentPeriodInfo } from '../utils/dateUtils';
 import { calculateWeeklyOrderSummary, getStockStatus } from '../utils/inventarioUtils';
@@ -26,9 +27,13 @@ export default function BrandeoSolicitudesView({
   solicitudes = [],
   onCreateSolicitud,
   onRecibirSolicitud,
+  onDeleteSolicitud,
+  onResetSolicitudes,
+  currentUser,
   activeBrander = '',
   theme
 }) {
+  const isMaster = (currentUser?.rol || '').toLowerCase() === 'master';
   // Cart state: map of modelId -> quantity
   const [cart, setCart] = useState({});
   const [solicitante, setSolicitante] = useState(activeBrander || localStorage.getItem('last_brander_name') || '');
@@ -681,59 +686,81 @@ export default function BrandeoSolicitudesView({
             </p>
           </div>
 
-          {/* Filter tabs: Pendientes vs Recibidas */}
-          <div style={{ display: 'inline-flex', gap: '4px', backgroundColor: 'var(--bg-surface)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-            <button
-              type="button"
-              onClick={() => setFiltroEstado('pendientes')}
-              style={{
-                padding: '6px 12px',
-                fontSize: '0.78rem',
-                fontWeight: '700',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: filtroEstado === 'pendientes' ? '#f59e0b' : 'transparent',
-                color: filtroEstado === 'pendientes' ? '#ffffff' : 'var(--text-main)',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              ⏳ Pendientes ({pendientesCount})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFiltroEstado('recibidas')}
-              style={{
-                padding: '6px 12px',
-                fontSize: '0.78rem',
-                fontWeight: '700',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: filtroEstado === 'recibidas' ? 'var(--success)' : 'transparent',
-                color: filtroEstado === 'recibidas' ? '#ffffff' : 'var(--text-main)',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              ✅ Recibidas ({recibidasCount})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFiltroEstado('todas')}
-              style={{
-                padding: '6px 12px',
-                fontSize: '0.78rem',
-                fontWeight: '700',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: filtroEstado === 'todas' ? 'var(--primary)' : 'transparent',
-                color: filtroEstado === 'todas' ? '#ffffff' : 'var(--text-main)',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              Todas ({solicitudes.length})
-            </button>
+          {/* Action and Filter controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            {isMaster && onResetSolicitudes && (
+              <button
+                type="button"
+                onClick={onResetSolicitudes}
+                className="btn btn-outline"
+                style={{
+                  color: 'var(--danger)',
+                  borderColor: 'rgba(239, 68, 68, 0.4)',
+                  height: '34px',
+                  fontSize: '0.78rem',
+                  gap: '6px'
+                }}
+                title="Reiniciar solicitudes de prueba a cero y restablecer inventario inicial"
+              >
+                <RotateCcw size={14} />
+                <span>Reiniciar Pedidos a Cero</span>
+              </button>
+            )}
+
+            {/* Filter tabs: Pendientes vs Recibidas */}
+            <div style={{ display: 'inline-flex', gap: '4px', backgroundColor: 'var(--bg-surface)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <button
+                type="button"
+                onClick={() => setFiltroEstado('pendientes')}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.78rem',
+                  fontWeight: '700',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: filtroEstado === 'pendientes' ? '#f59e0b' : 'transparent',
+                  color: filtroEstado === 'pendientes' ? '#ffffff' : 'var(--text-main)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                ⏳ Pendientes ({pendientesCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFiltroEstado('recibidas')}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.78rem',
+                  fontWeight: '700',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: filtroEstado === 'recibidas' ? 'var(--success)' : 'transparent',
+                  color: filtroEstado === 'recibidas' ? '#ffffff' : 'var(--text-main)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                ✅ Recibidas ({recibidasCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFiltroEstado('todas')}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.78rem',
+                  fontWeight: '700',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: filtroEstado === 'todas' ? 'var(--primary)' : 'transparent',
+                  color: filtroEstado === 'todas' ? '#ffffff' : 'var(--text-main)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                Todas ({solicitudes.length})
+              </button>
+            </div>
           </div>
         </div>
 
@@ -800,8 +827,34 @@ export default function BrandeoSolicitudesView({
                       </span>
                     </div>
 
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      Solicitado por: <strong style={{ color: 'var(--text-main)' }}>{sol.solicitadoPor}</strong>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        Solicitado por: <strong style={{ color: 'var(--text-main)' }}>{sol.solicitadoPor}</strong>
+                      </div>
+                      {isMaster && onDeleteSolicitud && (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteSolicitud(sol)}
+                          style={{
+                            background: 'none',
+                            border: '1px solid rgba(239, 68, 68, 0.35)',
+                            borderRadius: '6px',
+                            padding: '3px 8px',
+                            color: 'var(--danger)',
+                            cursor: 'pointer',
+                            fontSize: '0.74rem',
+                            fontWeight: '700',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="Eliminar este pedido de prueba (Exclusivo Master)"
+                        >
+                          <Trash2 size={12} />
+                          <span>Eliminar Pedido</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 

@@ -509,6 +509,88 @@ export default function App() {
     }
   };
 
+  // Delete an individual order (Exclusive to Master)
+  const handleDeleteSolicitud = async (solicitud) => {
+    if (!db) return;
+    if ((currentUser?.rol || '').toLowerCase() !== 'master') {
+      showToast('Acceso denegado: Solo el Master puede eliminar solicitudes.', 'danger');
+      return;
+    }
+
+    const isRecibido = solicitud.estado === 'RECIBIDO';
+    let revertStock = false;
+
+    if (isRecibido) {
+      revertStock = window.confirm(
+        `El pedido ${solicitud.numeroSolicitud} ya fue RECIBIDO en inventario.\n\n` +
+        `¿Deseas RESTAR las unidades (${solicitud.totalUnidades} kits) del stock disponible al eliminarlo para no dejar sobrantes de prueba?\n\n` +
+        `• Clic en [Aceptar] para eliminar el pedido y RESTAR los kits del stock.\n` +
+        `• Clic en [Cancelar] para abortar la eliminación.`
+      );
+      if (!revertStock) return;
+    } else {
+      const confirmDelete = window.confirm(`¿Estás seguro de eliminar el pedido pendiente ${solicitud.numeroSolicitud}?`);
+      if (!confirmDelete) return;
+    }
+
+    try {
+      if (revertStock && (solicitud.items || []).length > 0) {
+        for (const item of (solicitud.items || [])) {
+          const invItem = inventario.find(i => i.id === item.id || (i.modelo || '').toLowerCase() === (item.modelo || '').toLowerCase());
+          if (invItem) {
+            const nuevoStock = Math.max(0, (Number(invItem.disponibles) || 0) - (Number(item.cantidad) || 0));
+            await updateDoc(doc(db, 'inventario_brandeo', invItem.id), {
+              disponibles: nuevoStock,
+              updatedAt: Date.now()
+            });
+          }
+        }
+      }
+
+      await deleteDoc(doc(db, 'solicitudes_brandeo', solicitud.id));
+      showToast(`Pedido ${solicitud.numeroSolicitud} eliminado correctamente.`, 'info');
+    } catch (err) {
+      console.error('Error eliminando solicitud:', err);
+      showToast('Error al eliminar la solicitud.', 'danger');
+    }
+  };
+
+  // Reset all orders to zero (Exclusive to Master for clean production start)
+  const handleResetSolicitudes = async () => {
+    if (!db) return;
+    if ((currentUser?.rol || '').toLowerCase() !== 'master') {
+      showToast('Acceso denegado: Solo el Master puede reiniciar solicitudes.', 'danger');
+      return;
+    }
+
+    const confirmReset = window.confirm(
+      '¿Deseas reiniciar todas las solicitudes de pedidos a CERO y restablecer el inventario inicial para arrancar en limpio?\n\n' +
+      'Esto eliminará los pedidos registrados de prueba y dejará las tablas semanales en 0.'
+    );
+    if (!confirmReset) return;
+
+    try {
+      // 1. Eliminar todas las solicitudes existentes en solicitudes_brandeo
+      for (const sol of solicitudes) {
+        await deleteDoc(doc(db, 'solicitudes_brandeo', sol.id));
+      }
+
+      // 2. Restablecer el inventario a los modelos predeterminados limpios
+      for (const def of DEFAULT_BRANDING_MODELS) {
+        await setDoc(doc(db, 'inventario_brandeo', def.id), {
+          ...def,
+          totalConsumidos: 0,
+          updatedAt: Date.now()
+        }, { merge: true });
+      }
+
+      showToast('¡Historial y pedidos reiniciados a cero correctamente para arrancar!', 'success');
+    } catch (err) {
+      console.error('Error al reiniciar solicitudes:', err);
+      showToast('Error al reiniciar pedidos a cero.', 'danger');
+    }
+  };
+
   // Toggle or Revert brandeo
   const handleToggleRequiereBrandeo = async (eq, newValue) => {
     if (!db) return;
@@ -693,6 +775,9 @@ export default function App() {
             solicitudes={solicitudes}
             onCreateSolicitud={handleCreateSolicitud}
             onRecibirSolicitud={handleRecibirSolicitud}
+            onDeleteSolicitud={handleDeleteSolicitud}
+            onResetSolicitudes={handleResetSolicitudes}
+            currentUser={currentUser}
             activeBrander={currentUser.nombre}
             theme={theme}
           />
