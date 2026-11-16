@@ -6,8 +6,11 @@ import BrandeoNavbar from './components/BrandeoNavbar';
 import BrandeoStats from './components/BrandeoStats';
 import BrandeoFilters from './components/BrandeoFilters';
 import BrandeoTable from './components/BrandeoTable';
+import BrandeoReportesView from './components/BrandeoReportesView';
 import ConfirmBrandeoModal from './components/ConfirmBrandeoModal';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { exportBrandeoToExcel } from './utils/exportUtils';
+import { createBrandeoRecord } from './utils/dateUtils';
 import { AlertCircle, CheckCircle, Info } from 'lucide-react';
 
 export default function App() {
@@ -22,11 +25,14 @@ export default function App() {
 
   // Filters & Tabs
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('pendientes'); // 'pendientes' | 'brandeados' | 'todos'
+  const [activeTab, setActiveTab] = useState('pendientes'); // 'pendientes' | 'brandeados' | 'reportes' | 'todos'
   const [tipoFiltro, setTipoFiltro] = useState('Todos');
 
   // Confirmation Modal
   const [modalEquipo, setModalEquipo] = useState(null);
+
+  // PWA banner state
+  const [showPWABanner, setShowPWABanner] = useState(true);
 
   // Toast feedback
   const [toast, setToast] = useState(null);
@@ -64,7 +70,7 @@ export default function App() {
           id: docSnap.id,
           ...docSnap.data()
         }));
-        // Sort: most recent first if createdAt exists
+        // Sort: most recent first
         list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         setEquipos(list);
         setLoading(false);
@@ -100,23 +106,20 @@ export default function App() {
     return Array.from(set).sort();
   }, [equipos]);
 
-  // Filtered equipments based on activeTab, search, and type
+  // Filtered equipments for list view
   const filteredEquipos = useMemo(() => {
     return equipos.filter(eq => {
-      // 1. Tab filter
       if (activeTab === 'pendientes') {
         if (!eq.requiereBrandeo) return false;
       } else if (activeTab === 'brandeados') {
         if (!eq.brandeoRealizado) return false;
       }
 
-      // 2. Model / Type filter
       if (tipoFiltro !== 'Todos') {
         const t = (eq.tipoEquipo || eq.modelo || '').trim().toLowerCase();
         if (t !== tipoFiltro.trim().toLowerCase()) return false;
       }
 
-      // 3. Search Term filter
       if (searchTerm.trim()) {
         const query = searchTerm.toLowerCase().trim();
         const combined = [
@@ -127,7 +130,9 @@ export default function App() {
           eq.cliente,
           eq.lugar,
           eq.tecnico,
-          eq.usuarioBrandeo
+          eq.usuarioBrandeo,
+          eq.fechaBrandeo,
+          eq.semanaBrandeo
         ]
           .filter(Boolean)
           .join(' ')
@@ -144,7 +149,7 @@ export default function App() {
   const triggerConfetti = () => {
     try {
       confetti({
-        particleCount: 75,
+        particleCount: 80,
         spread: 70,
         origin: { y: 0.6 }
       });
@@ -153,37 +158,25 @@ export default function App() {
     }
   };
 
-  // Open confirmation modal or quick confirm
+  // Open confirmation modal
   const handleOpenConfirmModal = (eq) => {
     setModalEquipo(eq);
   };
 
-  // Confirm Brandeo
+  // Confirm Brandeo: ONLY here is the exact date, time, week & month recorded!
   const handleConfirmBrandeo = async (id, extraData = {}) => {
     if (!db) return;
     try {
-      const nowStr = new Date().toLocaleString('es-CR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
+      const brandeoRecord = createBrandeoRecord({
+        usuarioBrandeo: extraData.usuarioBrandeo || activeBrander || 'Técnico de Brandeo',
+        comentariosBrandeo: extraData.comentariosBrandeo || ''
       });
 
-      const payload = {
-        requiereBrandeo: false, // Inmediatamente remueve el color en Gestor de Equipos
-        brandeoRealizado: true,
-        fechaBrandeo: nowStr,
-        usuarioBrandeo: extraData.usuarioBrandeo || activeBrander || 'Técnico de Brandeo',
-        comentariosBrandeo: extraData.comentariosBrandeo || '',
-        updatedAt: Date.now()
-      };
-
-      await updateDoc(doc(db, 'equipos', id), payload);
+      await updateDoc(doc(db, 'equipos', id), brandeoRecord);
 
       setModalEquipo(null);
       triggerConfetti();
-      showToast('¡Brandeo confirmado! Se ha quitado el color distintivo en el Gestor de Equipos.', 'success');
+      showToast(`¡Brandeo guardado con éxito a las ${brandeoRecord.horaBrandeo}! Se retiró el color en Gestor de Equipos.`, 'success');
     } catch (err) {
       console.error('Error confirming brandeo:', err);
       showToast('Error al actualizar en Firebase. Intente nuevamente.', 'danger');
@@ -200,10 +193,21 @@ export default function App() {
         updatedAt: Date.now()
       };
 
+      // If reverting back to pending or removing brandeo realizado, clean brandeo timestamp
+      if (newValue === true) {
+        payload.brandeoRealizado = false;
+        payload.timestampBrandeo = null;
+        payload.fechaBrandeo = '';
+        payload.fechaBrandeoCorta = '';
+        payload.horaBrandeo = '';
+        payload.mesBrandeo = '';
+        payload.semanaBrandeo = '';
+      }
+
       await updateDoc(doc(db, 'equipos', eq.id), payload);
 
       if (newValue) {
-        showToast('Equipo marcado como pendiente de brandeo (destacado en Gestor de Equipos).', 'info');
+        showToast('Equipo vuelto a marcar como pendiente de brandeo.', 'info');
       } else {
         showToast('Solicitud de brandeo desactivada.', 'info');
       }
@@ -215,12 +219,12 @@ export default function App() {
 
   // Prompt user to update default brander name
   const handleChangeBrander = () => {
-    const newName = window.prompt('Ingresa el nombre o iniciales de la persona que realiza el brandeo:', activeBrander);
+    const newName = window.prompt('Ingresa el nombre de la persona que realiza el brandeo:', activeBrander);
     if (newName !== null) {
       const trimmed = newName.trim();
       setActiveBrander(trimmed);
       localStorage.setItem('last_brander_name', trimmed);
-      showToast(`Responsable actualizado a: ${trimmed || 'Sin asignar'}`, 'info');
+      showToast(`Responsable: ${trimmed || 'Sin asignar'}`, 'info');
     }
   };
 
@@ -265,13 +269,13 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <main style={{ flex: 1, maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '24px' }}>
+      <main style={{ flex: 1, maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '16px' }}>
         
         {/* Error Alert */}
         {error && (
           <div style={{
             padding: '14px 18px',
-            marginBottom: '20px',
+            marginBottom: '16px',
             borderRadius: '10px',
             backgroundColor: 'var(--danger-light)',
             color: 'var(--danger)',
@@ -308,12 +312,16 @@ export default function App() {
           onExportExcel={() => exportBrandeoToExcel(filteredEquipos, `Brandeo_${activeTab}`)}
         />
 
-        {/* Table View */}
+        {/* Tab Content */}
         {loading ? (
           <div className="card" style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p style={{ fontSize: '1rem', fontWeight: '600' }}>Cargando datos desde Firebase...</p>
           </div>
+        ) : activeTab === 'reportes' ? (
+          /* View 1: Weekly and Monthly Analytics */
+          <BrandeoReportesView equipos={equipos} theme={theme} />
         ) : (
+          /* View 2: Panoramic Table & Mobile Cards */
           <BrandeoTable
             equipos={filteredEquipos}
             activeTab={activeTab}
@@ -324,17 +332,22 @@ export default function App() {
         )}
       </main>
 
+      {/* Floating PWA Install Banner (Mobile & PC) */}
+      {showPWABanner && (
+        <PWAInstallPrompt isBanner={true} onClose={() => setShowPWABanner(false)} />
+      )}
+
       {/* Footer */}
       <footer style={{
-        padding: '16px 24px',
+        padding: '16px 20px',
         textAlign: 'center',
         borderTop: '1px solid var(--border-color)',
-        fontSize: '0.8rem',
+        fontSize: '0.78rem',
         color: 'var(--text-muted)',
         backgroundColor: 'var(--bg-card)',
         marginTop: '30px'
       }}>
-        Sistema de Control y Seguimiento de Brandeo • Integrado con Gestor de Equipos PRO en Tiempo Real
+        Control de Brandeo de Equipos • Instalable como App PWA para Computadoras y Teléfonos Celulares
       </footer>
 
       {/* Confirmation Modal */}

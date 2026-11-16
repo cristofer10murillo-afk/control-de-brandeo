@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, CheckCircle2, ListFilter, Download, RefreshCw, Sparkles } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ListFilter, Download, BarChart3 } from 'lucide-react';
 
 export default function BrandeoFilters({
   activeTab,
@@ -29,13 +29,21 @@ export default function BrandeoFilters({
         borderBottom: '1px solid var(--border-color)',
         paddingBottom: '12px'
       }}>
-        {/* Tab Buttons */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {/* Tab Buttons (Horizontal scroll on mobile) */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          overflowX: 'auto',
+          maxWidth: '100%',
+          paddingBottom: '4px',
+          WebkitOverflowScrolling: 'touch'
+        }}>
+          {/* 1. Pendientes */}
           <button
             onClick={() => setActiveTab('pendientes')}
             style={{
-              padding: '9px 18px',
-              fontSize: '0.88rem',
+              padding: '9px 16px',
+              fontSize: '0.86rem',
               fontWeight: '700',
               borderRadius: '10px',
               border: 'none',
@@ -43,19 +51,21 @@ export default function BrandeoFilters({
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              whiteSpace: 'nowrap',
               backgroundColor: activeTab === 'pendientes' ? '#8b5cf6' : 'var(--bg-surface)',
               color: activeTab === 'pendientes' ? '#ffffff' : 'var(--text-main)',
               boxShadow: activeTab === 'pendientes' ? '0 4px 10px rgba(139, 92, 246, 0.3)' : 'var(--shadow-sm)',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              flexShrink: 0
             }}
           >
-            <AlertCircle size={17} />
-            <span>Pendientes por Brandear</span>
+            <AlertCircle size={16} />
+            <span>Pendientes</span>
             <span style={{
-              fontSize: '0.75rem',
+              fontSize: '0.72rem',
               fontWeight: '800',
-              padding: '2px 8px',
-              borderRadius: '12px',
+              padding: '2px 7px',
+              borderRadius: '10px',
               backgroundColor: activeTab === 'pendientes' ? 'rgba(255, 255, 255, 0.25)' : 'var(--primary-light)',
               color: activeTab === 'pendientes' ? '#ffffff' : 'var(--primary)'
             }}>
@@ -63,11 +73,12 @@ export default function BrandeoFilters({
             </span>
           </button>
 
+          {/* 2. Brandeados */}
           <button
             onClick={() => setActiveTab('brandeados')}
             style={{
-              padding: '9px 18px',
-              fontSize: '0.88rem',
+              padding: '9px 16px',
+              fontSize: '0.86rem',
               fontWeight: '700',
               borderRadius: '10px',
               border: 'none',
@@ -75,19 +86,21 @@ export default function BrandeoFilters({
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              whiteSpace: 'nowrap',
               backgroundColor: activeTab === 'brandeados' ? '#10b981' : 'var(--bg-surface)',
               color: activeTab === 'brandeados' ? '#ffffff' : 'var(--text-main)',
               boxShadow: activeTab === 'brandeados' ? '0 4px 10px rgba(16, 185, 129, 0.3)' : 'var(--shadow-sm)',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              flexShrink: 0
             }}
           >
-            <CheckCircle2 size={17} />
-            <span>Equipos Brandeados</span>
+            <CheckCircle2 size={16} />
+            <span>Brandeados</span>
             <span style={{
-              fontSize: '0.75rem',
+              fontSize: '0.72rem',
               fontWeight: '800',
-              padding: '2px 8px',
-              borderRadius: '12px',
+              padding: '2px 7px',
+              borderRadius: '10px',
               backgroundColor: activeTab === 'brandeados' ? 'rgba(255, 255, 255, 0.25)' : 'var(--success-light)',
               color: activeTab === 'brandeados' ? '#ffffff' : 'var(--success)'
             }}>
@@ -95,11 +108,12 @@ export default function BrandeoFilters({
             </span>
           </button>
 
+          {/* 3. Métricas por Semana y Mes */}
           <button
-            onClick={() => setActiveTab('todos')}
+            onClick={() => setActiveTab('reportes')}
             style={{
-              padding: '9px 18px',
-              fontSize: '0.88rem',
+              padding: '9px 16px',
+              fontSize: '0.86rem',
               fontWeight: '700',
               borderRadius: '10px',
               border: 'none',
@@ -107,19 +121,46 @@ export default function BrandeoFilters({
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              whiteSpace: 'nowrap',
+              backgroundColor: activeTab === 'reportes' ? '#6366f1' : 'var(--bg-surface)',
+              color: activeTab === 'reportes' ? '#ffffff' : 'var(--text-main)',
+              boxShadow: activeTab === 'reportes' ? '0 4px 10px rgba(99, 102, 241, 0.3)' : 'var(--shadow-sm)',
+              transition: 'all 0.2s ease',
+              flexShrink: 0
+            }}
+          >
+            <BarChart3 size={16} />
+            <span>Métricas Semanal / Mensual</span>
+          </button>
+
+          {/* 4. Todos los Equipos */}
+          <button
+            onClick={() => setActiveTab('todos')}
+            style={{
+              padding: '9px 16px',
+              fontSize: '0.86rem',
+              fontWeight: '700',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              whiteSpace: 'nowrap',
               backgroundColor: activeTab === 'todos' ? '#0284c7' : 'var(--bg-surface)',
               color: activeTab === 'todos' ? '#ffffff' : 'var(--text-main)',
               boxShadow: activeTab === 'todos' ? '0 4px 10px rgba(2, 132, 199, 0.3)' : 'var(--shadow-sm)',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              flexShrink: 0
             }}
           >
-            <ListFilter size={17} />
-            <span>Todos los Equipos</span>
+            <ListFilter size={16} />
+            <span>Todos</span>
             <span style={{
-              fontSize: '0.75rem',
+              fontSize: '0.72rem',
               fontWeight: '800',
-              padding: '2px 8px',
-              borderRadius: '12px',
+              padding: '2px 7px',
+              borderRadius: '10px',
               backgroundColor: activeTab === 'todos' ? 'rgba(255, 255, 255, 0.25)' : 'var(--info-light)',
               color: activeTab === 'todos' ? '#ffffff' : 'var(--info)'
             }}>
@@ -142,46 +183,48 @@ export default function BrandeoFilters({
         </div>
       </div>
 
-      {/* Filter Row: Model / Type selector */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
-            Filtrar Modelo:
-          </span>
-          <select
-            className="form-control"
-            value={tipoFiltro}
-            onChange={(e) => setTipoFiltro(e.target.value)}
-            style={{ width: '220px', height: '36px', fontSize: '0.85rem' }}
-          >
-            <option value="Todos">Todos los modelos</option>
-            {tiposDisponibles.map(t => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-
-        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-          {activeTab === 'pendientes' && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8b5cf6' }} />
-              Al marcar la casilla, el equipo se actualizará y <strong>se quitará automáticamente el color en Gestor de Equipos</strong>.
+      {/* Filter Row: Model / Type selector (shown for list tabs) */}
+      {activeTab !== 'reportes' && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+              Filtrar Modelo:
             </span>
-          )}
-          {activeTab === 'brandeados' && (
-            <span>Historial de equipos con brandeo completado exitosamente.</span>
-          )}
-          {activeTab === 'todos' && (
-            <span>Catálogo general de equipos para activar o revisar necesidad de brandeo.</span>
-          )}
+            <select
+              className="form-control"
+              value={tipoFiltro}
+              onChange={(e) => setTipoFiltro(e.target.value)}
+              style={{ width: '220px', height: '36px', fontSize: '0.85rem' }}
+            >
+              <option value="Todos">Todos los modelos</option>
+              {tiposDisponibles.map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+            {activeTab === 'pendientes' && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8b5cf6' }} />
+                Al marcar la casilla se guarda la <strong>fecha y hora exacta</strong> y se retira el color en Gestor de Equipos.
+              </span>
+            )}
+            {activeTab === 'brandeados' && (
+              <span>Historial con fecha y hora exacta de cada confirmación.</span>
+            )}
+            {activeTab === 'todos' && (
+              <span>Catálogo general de equipos para activar o revisar necesidad de brandeo.</span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

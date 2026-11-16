@@ -9,7 +9,9 @@ import {
   MapPin, 
   Calendar, 
   User, 
-  ExternalLink 
+  Tag, 
+  Hash, 
+  Layers 
 } from 'lucide-react';
 
 export default function BrandeoTable({
@@ -56,224 +58,386 @@ export default function BrandeoTable({
   }
 
   return (
-    <div className="card" style={{ padding: 0, overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-        {/* Table Header matching Photo 1 (#024268) */}
-        <thead style={{ backgroundColor: 'var(--table-header-bg)', color: '#ffffff' }}>
-          <tr>
-            <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Confirmación de Brandeo
-            </th>
-            <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Equipo / Modelo
-            </th>
-            <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Activo
-            </th>
-            <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Serie
-            </th>
-            <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Cliente
-            </th>
-            <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Lugar / Ubicación
-            </th>
-            <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Estado
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {equipos.map(eq => {
-            const isBrandeado = eq.brandeoRealizado === true;
-            const isPendiente = eq.requiereBrandeo === true;
+    <>
+      {/* 1. DESKTOP VIEW: PANORAMIC TABLE MATCHING PHOTO 1 */}
+      <div className="card desktop-table-view" style={{ padding: 0, overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+          <thead style={{ backgroundColor: 'var(--table-header-bg)', color: '#ffffff' }}>
+            <tr>
+              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Confirmación de Brandeo
+              </th>
+              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Equipo / Modelo
+              </th>
+              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Activo
+              </th>
+              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Serie
+              </th>
+              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Cliente
+              </th>
+              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Lugar / Ubicación
+              </th>
+              <th style={{ padding: '14px 16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Registro y Fecha / Hora
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {equipos.map(eq => {
+              const isBrandeado = eq.brandeoRealizado === true;
+              const isPendiente = eq.requiereBrandeo === true;
 
-            // Row styling based on state
-            let rowBg = 'transparent';
-            let borderLeft = '4px solid transparent';
+              let rowBg = 'transparent';
+              let borderLeft = '4px solid transparent';
 
-            if (isPendiente) {
-              rowBg = theme === 'dark' ? '#2d184c' : '#f5f0ff';
-              borderLeft = '4px solid #8b5cf6';
-            } else if (isBrandeado) {
-              rowBg = theme === 'dark' ? 'rgba(16, 185, 129, 0.08)' : '#f0fdf4';
-              borderLeft = '4px solid #10b981';
-            }
+              if (isPendiente) {
+                rowBg = theme === 'dark' ? '#2d184c' : '#f5f0ff';
+                borderLeft = '4px solid #8b5cf6';
+              } else if (isBrandeado) {
+                rowBg = theme === 'dark' ? 'rgba(16, 185, 129, 0.08)' : '#f0fdf4';
+                borderLeft = '4px solid #10b981';
+              }
 
-            return (
-              <tr 
-                key={eq.id}
-                style={{
-                  borderBottom: '1px solid var(--border-color)',
-                  backgroundColor: rowBg,
-                  transition: 'background-color 0.2s ease'
-                }}
-              >
-                {/* 1. Casilla de Confirmación de Brandeo */}
-                <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', borderLeft }}>
-                  {isPendiente ? (
-                    <button
-                      onClick={() => onConfirmBrandeo(eq)}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '8px 14px',
-                        backgroundColor: '#8b5cf6',
-                        color: '#ffffff',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '0.84rem',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 6px rgba(139, 92, 246, 0.35)',
-                        transition: 'all 0.15s ease'
-                      }}
-                      title="Haz clic aquí para confirmar que el brandeo de este equipo ha sido realizado"
-                    >
-                      <input 
-                        type="checkbox" 
-                        readOnly 
-                        checked={false} 
-                        style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#ffffff' }} 
-                      />
-                      <span>✓ Confirmar Brandeo Realizado</span>
-                    </button>
-                  ) : isBrandeado ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        backgroundColor: 'var(--success-light)',
-                        color: 'var(--success)',
-                        fontSize: '0.78rem',
-                        fontWeight: '700',
-                        border: '1px solid var(--success)'
-                      }}>
-                        <Check size={14} strokeWidth={3} />
-                        Brandeo Realizado
-                      </span>
-                      {/* Undo option */}
+              return (
+                <tr 
+                  key={eq.id}
+                  style={{
+                    borderBottom: '1px solid var(--border-color)',
+                    backgroundColor: rowBg,
+                    transition: 'background-color 0.2s ease'
+                  }}
+                >
+                  {/* Casilla de Confirmación */}
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', borderLeft }}>
+                    {isPendiente ? (
+                      <button
+                        onClick={() => onConfirmBrandeo(eq)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 14px',
+                          backgroundColor: '#8b5cf6',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '0.84rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 6px rgba(139, 92, 246, 0.35)',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="Haz clic aquí para confirmar que el brandeo de este equipo ha sido realizado"
+                      >
+                        <input 
+                          type="checkbox" 
+                          readOnly 
+                          checked={false} 
+                          style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#ffffff' }} 
+                        />
+                        <span>✓ Confirmar Brandeo Realizado</span>
+                      </button>
+                    ) : isBrandeado ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          backgroundColor: 'var(--success-light)',
+                          color: 'var(--success)',
+                          fontSize: '0.78rem',
+                          fontWeight: '700',
+                          border: '1px solid var(--success)'
+                        }}>
+                          <Check size={14} strokeWidth={3} />
+                          Brandeo Realizado
+                        </span>
+                        <button
+                          onClick={() => onToggleRequiereBrandeo(eq, true)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer',
+                            padding: '4px'
+                          }}
+                          title="Revertir a pendiente de brandeo"
+                        >
+                          <RotateCcw size={14} />
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         onClick={() => onToggleRequiereBrandeo(eq, true)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--text-muted)',
-                          cursor: 'pointer',
-                          padding: '4px',
-                          display: 'inline-flex',
-                          alignItems: 'center'
-                        }}
-                        title="Revertir: volver a marcar como pendiente de brandeo"
+                        className="btn btn-outline"
+                        style={{ padding: '5px 10px', fontSize: '0.78rem', height: '32px' }}
                       >
-                        <RotateCcw size={14} />
+                        <span>+ Solicitar Brandeo</span>
                       </button>
-                    </div>
-                  ) : (
-                    /* In "Todos" tab, equipo does not require brandeo */
-                    <button
-                      onClick={() => onToggleRequiereBrandeo(eq, true)}
-                      className="btn btn-outline"
-                      style={{ padding: '5px 10px', fontSize: '0.78rem', height: '32px' }}
-                      title="Activar necesidad de brandeo para este equipo"
-                    >
-                      <span>+ Solicitar Brandeo</span>
-                    </button>
-                  )}
-                </td>
+                    )}
+                  </td>
 
-                {/* 2. Equipo / Modelo (Foto 1) */}
-                <td style={{ padding: '12px 16px', fontWeight: '700', color: '#0284c7' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '0.92rem' }}>{eq.tipoEquipo || eq.modelo || 'Sin Tipo'}</span>
-                    {isPendiente && (
-                      <span style={{
-                        fontSize: '0.7rem',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        backgroundColor: '#8b5cf6',
-                        color: '#ffffff',
-                        fontWeight: '800'
-                      }}>
-                        🎨 URGENTE
+                  {/* Equipo / Modelo */}
+                  <td style={{ padding: '12px 16px', fontWeight: '700', color: '#0284c7' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '0.92rem' }}>{eq.tipoEquipo || eq.modelo || 'Sin Tipo'}</span>
+                      {isPendiente && (
+                        <span style={{
+                          fontSize: '0.7rem',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          backgroundColor: '#8b5cf6',
+                          color: '#ffffff',
+                          fontWeight: '800'
+                        }}>
+                          🎨 URGENTE
+                        </span>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* Activo */}
+                  <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', fontWeight: '700' }}>
+                    {eq.activo || 'N/A'}
+                  </td>
+
+                  {/* Serie */}
+                  <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', fontWeight: '600' }}>
+                    {eq.serie || 'N/A'}
+                  </td>
+
+                  {/* Cliente */}
+                  <td style={{ 
+                    padding: '12px 16px', 
+                    fontWeight: '700',
+                    color: (eq.cliente || '').toUpperCase().includes('TBD') ? (theme === 'dark' ? '#4ade80' : '#15803d') : 'var(--text-main)'
+                  }}>
+                    {eq.cliente || 'Sin Cliente Asignado'}
+                  </td>
+
+                  {/* Lugar */}
+                  <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <MapPin size={13} color="var(--primary)" />
+                      {eq.lugar || eq.ubicacion || 'Taller'}
+                    </span>
+                  </td>
+
+                  {/* Registro y Fecha / Hora Exacta */}
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                    {isPendiente ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#8b5cf6', fontWeight: '700', fontSize: '0.8rem' }}>
+                        <Clock size={14} />
+                        Falta Brandear
+                      </span>
+                    ) : isBrandeado ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ color: 'var(--success)', fontWeight: '800', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Check size={13} /> {eq.fechaBrandeo || 'Completado'}
+                        </span>
+                        {eq.semanaBrandeo && (
+                          <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: '600' }}>
+                            {eq.semanaBrandeo} ({eq.mesBrandeo || ''})
+                          </span>
+                        )}
+                        {eq.usuarioBrandeo && (
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <User size={11} /> {eq.usuarioBrandeo}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                        Sin solicitud
                       </span>
                     )}
-                  </div>
-                </td>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
-                {/* 3. Activo (Foto 1) */}
-                <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', fontWeight: '700', color: 'var(--text-main)' }}>
-                  {eq.activo || 'N/A'}
-                </td>
+      {/* 2. MOBILE VIEW: FLUID, TOUCH-FRIENDLY CARDS FOR CELLPHONES */}
+      <div className="mobile-cards-view">
+        {equipos.map(eq => {
+          const isBrandeado = eq.brandeoRealizado === true;
+          const isPendiente = eq.requiereBrandeo === true;
 
-                {/* 4. Serie (Foto 1) */}
-                <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', color: 'var(--text-main)', fontWeight: '600' }}>
-                  {eq.serie || 'N/A'}
-                </td>
-
-                {/* 5. Cliente (Foto 1) */}
-                <td style={{ 
-                  padding: '12px 16px', 
-                  fontWeight: '700',
-                  color: (eq.cliente || '').toUpperCase().includes('TBD') ? (theme === 'dark' ? '#4ade80' : '#15803d') : 'var(--text-main)'
-                }}>
-                  {eq.cliente || 'Sin Cliente Asignado'}
-                </td>
-
-                {/* 6. Lugar / Ubicación */}
-                <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                    <MapPin size={13} color="var(--primary)" />
-                    {eq.lugar || eq.ubicacion || 'Taller'}
+          return (
+            <div
+              key={eq.id}
+              className="card"
+              style={{
+                padding: '16px',
+                borderLeft: isPendiente ? '6px solid #8b5cf6' : isBrandeado ? '6px solid #10b981' : '1px solid var(--border-color)',
+                backgroundColor: isPendiente ? (theme === 'dark' ? '#221138' : '#faf7ff') : 'var(--bg-card)',
+                boxShadow: 'var(--shadow-sm)'
+              }}
+            >
+              {/* Header: Equipo + Status Badge */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <div>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: '800', color: '#0284c7', lineHeight: 1.2 }}>
+                    {eq.tipoEquipo || eq.modelo || 'Equipo'}
+                  </h4>
+                  <p style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)', marginTop: '2px' }}>
+                    {eq.cliente || 'Sin cliente asignado'}
+                  </p>
+                </div>
+                {isPendiente && (
+                  <span style={{
+                    fontSize: '0.72rem',
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    backgroundColor: '#8b5cf6',
+                    color: '#ffffff',
+                    fontWeight: '800'
+                  }}>
+                    🎨 REQUIERE BRANDEO
                   </span>
-                </td>
+                )}
+                {isBrandeado && (
+                  <span style={{
+                    fontSize: '0.72rem',
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    backgroundColor: 'var(--success-light)',
+                    color: 'var(--success)',
+                    fontWeight: '800'
+                  }}>
+                    ✓ BRANDEADO
+                  </span>
+                )}
+              </div>
 
-                {/* 7. Estado / Fecha de Brandeo */}
-                <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
-                  {isPendiente ? (
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      color: '#8b5cf6',
-                      fontWeight: '700',
-                      fontSize: '0.8rem'
-                    }}>
-                      <Clock size={14} />
-                      Falta Brandear
-                    </span>
-                  ) : isBrandeado ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <span style={{ color: 'var(--success)', fontWeight: '700', fontSize: '0.8rem' }}>
-                        ✓ Completado
-                      </span>
-                      {eq.fechaBrandeo && (
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                          {eq.fechaBrandeo}
-                        </span>
-                      )}
-                      {eq.usuarioBrandeo && (
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <User size={11} /> {eq.usuarioBrandeo}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                      Sin solicitud
+              {/* Technical Details Grid */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px',
+                padding: '10px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--bg-surface-hover)',
+                marginBottom: '12px',
+                fontSize: '0.8rem'
+              }}>
+                <div>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>Activo:</span>
+                  <strong style={{ fontFamily: 'var(--font-mono)' }}>{eq.activo || 'N/A'}</strong>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>Serie:</span>
+                  <strong style={{ fontFamily: 'var(--font-mono)' }}>{eq.serie || 'N/A'}</strong>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>Lugar:</span>
+                  <span>{eq.lugar || eq.ubicacion || 'Taller'}</span>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>Estado:</span>
+                  <span>{isPendiente ? '⚠️ Pendiente' : isBrandeado ? '✓ Completado' : 'Sin solicitud'}</span>
+                </div>
+              </div>
+
+              {/* Exact Date and Time if completed */}
+              {isBrandeado && eq.fechaBrandeo && (
+                <div style={{
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                  marginBottom: '12px',
+                  fontSize: '0.78rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--success)', fontWeight: '700' }}>
+                    <Clock size={14} />
+                    <span>{eq.fechaBrandeo}</span>
+                  </div>
+                  {eq.usuarioBrandeo && (
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>
+                      {eq.usuarioBrandeo}
                     </span>
                   )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+                </div>
+              )}
+
+              {/* Big Touch Action Button for Cellphones */}
+              {isPendiente ? (
+                <button
+                  onClick={() => onConfirmBrandeo(eq)}
+                  style={{
+                    width: '100%',
+                    height: '48px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    backgroundColor: '#8b5cf6',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '0.95rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.35)',
+                    touchAction: 'manipulation'
+                  }}
+                >
+                  <Check size={20} strokeWidth={3} />
+                  <span>Confirmar Brandeo Realizado</span>
+                </button>
+              ) : isBrandeado ? (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{
+                    flex: 1,
+                    height: '42px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    backgroundColor: 'var(--success-light)',
+                    color: 'var(--success)',
+                    borderRadius: '10px',
+                    fontSize: '0.85rem',
+                    fontWeight: '800',
+                    border: '1px solid var(--success)'
+                  }}>
+                    <Check size={16} strokeWidth={3} />
+                    <span>Brandeo Realizado</span>
+                  </div>
+                  <button
+                    onClick={() => onToggleRequiereBrandeo(eq, true)}
+                    className="btn btn-outline"
+                    style={{ height: '42px', padding: '0 12px' }}
+                    title="Revertir"
+                  >
+                    <RotateCcw size={16} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => onToggleRequiereBrandeo(eq, true)}
+                  className="btn btn-outline"
+                  style={{ width: '100%', height: '42px' }}
+                >
+                  <span>+ Solicitar Brandeo</span>
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
