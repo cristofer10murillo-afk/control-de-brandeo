@@ -19,9 +19,16 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
+      // Reload on stale Vite chunks (prevents white screen when deploying new versions)
+      window.addEventListener('vite:preloadError', (event) => {
+        event.preventDefault();
+        window.location.reload();
+      });
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(err => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            reg.update();
+          }).catch(err => {
             console.log('SW registration error:', err);
           });
         });
