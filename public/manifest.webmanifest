@@ -1,7 +1,7 @@
 {
   "name": "Control de Brandeo",
-  "short_name": "Brandeo App",
-  "description": "Sistema colaborativo de control y confirmación de brandeo de equipos en tiempo real",
+  "short_name": "Brandeo PRO",
+  "description": "Sistema de control y confirmación de brandeo de equipos en tiempo real",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#090d16",
@@ -21,10 +21,10 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/app-icon-v2.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
+      "purpose": "any"
     }
   ]
 }

@@ -32,21 +32,20 @@ export default function BrandeoNavbar({
         gap: '12px'
       }}>
         {/* Logo and title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ffffff',
-            boxShadow: '0 4px 10px rgba(139, 92, 246, 0.3)',
-            flexShrink: 0
-          }}>
-            <Sparkles size={20} />
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img
+            src="/pwa-192x192.png"
+            alt="Logo Control de Brandeo"
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '11px',
+              boxShadow: '0 4px 12px rgba(139, 92, 246, 0.45)',
+              objectFit: 'cover',
+              flexShrink: 0,
+              border: '1px solid rgba(255, 255, 255, 0.15)'
+            }}
+          />
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <h1 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>

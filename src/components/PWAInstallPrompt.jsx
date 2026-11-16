@@ -101,19 +101,19 @@ export default function PWAInstallPrompt({ isBanner = false, onClose }) {
           animation: 'scaleIn 0.3s ease-out'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '10px',
-              backgroundColor: '#8b5cf6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#ffffff',
-              flexShrink: 0
-            }}>
-              <Smartphone size={22} />
-            </div>
+            <img
+              src="/pwa-192x192.png"
+              alt="Logo Brandeo"
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.45)',
+                objectFit: 'cover',
+                flexShrink: 0,
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
+            />
             <div>
               <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.2 }}>
                 Instalar Brandeo App
