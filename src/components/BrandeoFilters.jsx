@@ -1,11 +1,21 @@
 import React from 'react';
-import { AlertCircle, CheckCircle2, ListFilter, Download, BarChart3 } from 'lucide-react';
+import { 
+  AlertCircle, 
+  CheckCircle2, 
+  ListFilter, 
+  Download, 
+  BarChart3, 
+  Package, 
+  ShoppingCart 
+} from 'lucide-react';
 
 export default function BrandeoFilters({
   activeTab,
   setActiveTab,
   pendientesCount = 0,
   brandeadosCount = 0,
+  totalStockDisponible = 0,
+  pedidosPendientesCount = 0,
   totalCount = 0,
   tipoFiltro,
   setTipoFiltro,
@@ -47,7 +57,7 @@ export default function BrandeoFilters({
           <button
             onClick={() => setActiveTab('pendientes')}
             style={{
-              padding: '9px 16px',
+              padding: '9px 15px',
               fontSize: '0.86rem',
               fontWeight: '700',
               borderRadius: '10px',
@@ -82,7 +92,7 @@ export default function BrandeoFilters({
           <button
             onClick={() => setActiveTab('brandeados')}
             style={{
-              padding: '9px 16px',
+              padding: '9px 15px',
               fontSize: '0.86rem',
               fontWeight: '700',
               borderRadius: '10px',
@@ -113,11 +123,83 @@ export default function BrandeoFilters({
             </span>
           </button>
 
-          {/* 3. Métricas por Semana y Mes */}
+          {/* 3. Brandeo Disponible (Stock) */}
+          <button
+            onClick={() => setActiveTab('inventario')}
+            style={{
+              padding: '9px 15px',
+              fontSize: '0.86rem',
+              fontWeight: '700',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              whiteSpace: 'nowrap',
+              backgroundColor: activeTab === 'inventario' ? '#06b6d4' : 'var(--bg-surface)',
+              color: activeTab === 'inventario' ? '#ffffff' : 'var(--text-main)',
+              boxShadow: activeTab === 'inventario' ? '0 4px 10px rgba(6, 182, 212, 0.3)' : 'var(--shadow-sm)',
+              transition: 'all 0.2s ease',
+              flexShrink: 0
+            }}
+          >
+            <Package size={16} />
+            <span>Brandeo Disponible</span>
+            <span style={{
+              fontSize: '0.72rem',
+              fontWeight: '800',
+              padding: '2px 7px',
+              borderRadius: '10px',
+              backgroundColor: activeTab === 'inventario' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(6, 182, 212, 0.15)',
+              color: activeTab === 'inventario' ? '#ffffff' : '#06b6d4'
+            }}>
+              {totalStockDisponible}
+            </span>
+          </button>
+
+          {/* 4. Solicitud de Brandeo (Pedidos / Carrito) */}
+          <button
+            onClick={() => setActiveTab('solicitudes')}
+            style={{
+              padding: '9px 15px',
+              fontSize: '0.86rem',
+              fontWeight: '700',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              whiteSpace: 'nowrap',
+              backgroundColor: activeTab === 'solicitudes' ? '#f59e0b' : 'var(--bg-surface)',
+              color: activeTab === 'solicitudes' ? '#ffffff' : 'var(--text-main)',
+              boxShadow: activeTab === 'solicitudes' ? '0 4px 10px rgba(245, 158, 11, 0.3)' : 'var(--shadow-sm)',
+              transition: 'all 0.2s ease',
+              flexShrink: 0
+            }}
+          >
+            <ShoppingCart size={16} />
+            <span>Solicitud de Brandeo</span>
+            {pedidosPendientesCount > 0 && (
+              <span style={{
+                fontSize: '0.72rem',
+                fontWeight: '800',
+                padding: '2px 7px',
+                borderRadius: '10px',
+                backgroundColor: activeTab === 'solicitudes' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(245, 158, 11, 0.2)',
+                color: activeTab === 'solicitudes' ? '#ffffff' : '#f59e0b'
+              }}>
+                {pedidosPendientesCount}
+              </span>
+            )}
+          </button>
+
+          {/* 5. Métricas por Semana y Mes */}
           <button
             onClick={() => setActiveTab('reportes')}
             style={{
-              padding: '9px 16px',
+              padding: '9px 15px',
               fontSize: '0.86rem',
               fontWeight: '700',
               borderRadius: '10px',
@@ -138,11 +220,11 @@ export default function BrandeoFilters({
             <span>Métricas Semanal / Mensual</span>
           </button>
 
-          {/* 4. Todos los Equipos */}
+          {/* 6. Todos los Equipos */}
           <button
             onClick={() => setActiveTab('todos')}
             style={{
-              padding: '9px 16px',
+              padding: '9px 15px',
               fontSize: '0.86rem',
               fontWeight: '700',
               borderRadius: '10px',
@@ -176,20 +258,22 @@ export default function BrandeoFilters({
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            onClick={onExportExcel}
-            className="btn btn-outline"
-            style={{ height: '38px', fontSize: '0.84rem' }}
-            title="Descargar reporte en formato Excel"
-          >
-            <Download size={16} color="var(--success)" />
-            <span>Exportar Excel</span>
-          </button>
+          {(activeTab === 'pendientes' || activeTab === 'brandeados' || activeTab === 'todos') && (
+            <button
+              onClick={onExportExcel}
+              className="btn btn-outline"
+              style={{ height: '38px', fontSize: '0.84rem' }}
+              title="Descargar reporte en formato Excel"
+            >
+              <Download size={16} color="var(--success)" />
+              <span>Exportar Excel</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Filter Row: Model / Type selector + Priority Filter */}
-      {activeTab !== 'reportes' && (
+      {/* Filter Row: Model / Type selector + Priority Filter (only in equipment lists) */}
+      {(activeTab === 'pendientes' || activeTab === 'brandeados' || activeTab === 'todos') && (
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -309,11 +393,11 @@ export default function BrandeoFilters({
             {activeTab === 'pendientes' && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8b5cf6' }} />
-                Al marcar la casilla se guarda la <strong>fecha y hora exacta</strong> y se retira el color en Gestor de Equipos.
+                Al marcar la casilla se guarda la <strong>fecha y hora exacta</strong>, se <strong>descuenta del stock</strong> y se retira el color en Gestor de Equipos.
               </span>
             )}
             {activeTab === 'brandeados' && (
-              <span>Historial con fecha y hora exacta de cada confirmación.</span>
+              <span>Historial con fecha y hora exacta de cada confirmación y kit usado.</span>
             )}
             {activeTab === 'todos' && (
               <span>Catálogo general de equipos para activar o revisar necesidad de brandeo.</span>

@@ -1,17 +1,36 @@
-import React, { useState } from 'react';
-import { X, Sparkles, Check, User, MessageSquare, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Sparkles, Check, User, MessageSquare, AlertCircle, Package, AlertTriangle } from 'lucide-react';
+import { findMatchingModel } from '../utils/inventarioUtils';
 
 export default function ConfirmBrandeoModal({
   equipo,
+  inventario = [],
   defaultBrander = '',
   onClose,
   onConfirm
 }) {
   const [branderName, setBranderName] = useState(defaultBrander || localStorage.getItem('last_brander_name') || '');
   const [comentarios, setComentarios] = useState('');
+  const [selectedModelId, setSelectedModelId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Pre-select matching model on mount / equipo change
+  useEffect(() => {
+    if (equipo && inventario.length > 0) {
+      const match = findMatchingModel(equipo.tipoEquipo || equipo.modelo, inventario);
+      if (match) {
+        setSelectedModelId(match.id);
+      } else {
+        setSelectedModelId(inventario[0].id);
+      }
+    }
+  }, [equipo, inventario]);
+
   if (!equipo) return null;
+
+  const currentSelectedModel = inventario.find(m => m.id === selectedModelId) || null;
+  const currentDisponibles = currentSelectedModel ? (Number(currentSelectedModel.disponibles) || 0) : 0;
+  const newDisponibles = Math.max(0, currentDisponibles - 1);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +40,9 @@ export default function ConfirmBrandeoModal({
     }
     onConfirm(equipo.id, {
       usuarioBrandeo: branderName.trim() || 'Técnico de Brandeo',
-      comentariosBrandeo: comentarios.trim()
+      comentariosBrandeo: comentarios.trim(),
+      tipoBrandeoUsado: currentSelectedModel ? currentSelectedModel.modelo : (equipo.tipoEquipo || equipo.modelo || ''),
+      inventarioId: selectedModelId || null
     });
   };
 
@@ -50,7 +71,7 @@ export default function ConfirmBrandeoModal({
             }}>
               <Sparkles size={18} />
             </div>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>
               Confirmar Brandeo Realizado
             </h2>
           </div>
@@ -80,7 +101,7 @@ export default function ConfirmBrandeoModal({
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                   Equipo / Modelo:
                 </span>
-                <p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0284c7', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0284c7', display: 'flex', alignItems: 'center', gap: '6px', margin: '2px 0 0 0' }}>
                   <span>{equipo.tipoEquipo || equipo.modelo || 'N/A'}</span>
                   <span style={{
                     padding: '1px 6px',
@@ -98,7 +119,7 @@ export default function ConfirmBrandeoModal({
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                   Cliente:
                 </span>
-                <p style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-main)' }}>
+                <p style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-main)', margin: '2px 0 0 0' }}>
                   {equipo.cliente || 'Sin cliente asignado'}
                 </p>
               </div>
@@ -106,7 +127,7 @@ export default function ConfirmBrandeoModal({
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                   Activo:
                 </span>
-                <p style={{ fontSize: '0.9rem', fontFamily: 'var(--font-mono)', fontWeight: '700' }}>
+                <p style={{ fontSize: '0.9rem', fontFamily: 'var(--font-mono)', fontWeight: '700', margin: '2px 0 0 0' }}>
                   {equipo.activo || 'N/A'}
                 </p>
               </div>
@@ -114,11 +135,81 @@ export default function ConfirmBrandeoModal({
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                   Serie:
                 </span>
-                <p style={{ fontSize: '0.9rem', fontFamily: 'var(--font-mono)', fontWeight: '700' }}>
+                <p style={{ fontSize: '0.9rem', fontFamily: 'var(--font-mono)', fontWeight: '700', margin: '2px 0 0 0' }}>
                   {equipo.serie || 'N/A'}
                 </p>
               </div>
             </div>
+
+            {/* SELECCIÓN DE TIPO DE BRANDEO UTILIZADO Y DESCUENTO AUTOMÁTICO DE STOCK */}
+            {inventario.length > 0 && (
+              <div style={{
+                padding: '14px 16px',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                border: '1px solid rgba(139, 92, 246, 0.25)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)' }}>
+                  <Package size={16} color="var(--primary)" />
+                  <span>Tipo de Brandeo Utilizado (Se descontará 1 unidad):</span>
+                </label>
+                
+                <select
+                  className="form-control"
+                  value={selectedModelId}
+                  onChange={(e) => setSelectedModelId(e.target.value)}
+                  style={{ fontWeight: '700', height: '38px', fontSize: '0.9rem' }}
+                >
+                  {inventario.map(item => (
+                    <option key={item.id} value={item.id}>
+                      {item.modelo} ({item.disponibles} disponibles)
+                    </option>
+                  ))}
+                </select>
+
+                {/* Stock Deduction Preview */}
+                {currentSelectedModel && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '0.8rem',
+                    paddingTop: '4px'
+                  }}>
+                    <span style={{ color: 'var(--text-muted)' }}>
+                      Saldo en inventario:
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' }}>
+                      <span style={{ color: currentDisponibles <= 0 ? 'var(--danger)' : 'var(--text-main)' }}>
+                        {currentDisponibles} disp.
+                      </span>
+                      <span>➔</span>
+                      <span style={{ color: newDisponibles <= 0 ? 'var(--danger)' : 'var(--success)' }}>
+                        {newDisponibles} restantes
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {currentDisponibles <= 0 && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '0.76rem',
+                    color: '#ef4444',
+                    fontWeight: '700',
+                    marginTop: '2px'
+                  }}>
+                    <AlertTriangle size={14} />
+                    <span>¡Aviso: El kit de {currentSelectedModel?.modelo} está en 0! Considera solicitar más en pedidos.</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Brander Name */}
             <div>
@@ -165,7 +256,7 @@ export default function ConfirmBrandeoModal({
             }}>
               <Check size={18} color="var(--success)" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
-                Al confirmar, este equipo se marcará como <strong>Brandeado</strong> y de inmediato <strong>se quitará el color distintivo en el Gestor de Equipos</strong>.
+                Al confirmar, se marcará como <strong>Brandeado</strong>, se <strong>descontará 1 kit de {currentSelectedModel?.modelo || 'brandeo'}</strong> del stock y de inmediato <strong>se quitará el color distintivo en el Gestor de Equipos</strong>.
               </div>
             </div>
 

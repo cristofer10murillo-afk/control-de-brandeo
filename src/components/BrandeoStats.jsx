@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, CheckCircle2, Layers, Flame, TrendingUp } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Layers, Flame, TrendingUp, Package, ShoppingCart } from 'lucide-react';
 
 export default function BrandeoStats({
   totalEquipos = 0,
@@ -8,6 +8,9 @@ export default function BrandeoStats({
   urgenteCount = 0,
   medioCount = 0,
   bajoCount = 0,
+  totalStockDisponible = 0,
+  pedidosPendientesCount = 0,
+  unidadesEnTransito = 0,
   activeTab,
   setActiveTab
 }) {
@@ -16,19 +19,19 @@ export default function BrandeoStats({
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-      gap: '16px',
-      marginBottom: '24px'
+      gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+      gap: '14px',
+      marginBottom: '20px'
     }}>
       {/* 1. Falta por Brandear (Pendientes) */}
       <div 
         onClick={() => setActiveTab('pendientes')}
         className="card"
         style={{
-          padding: '18px 20px',
+          padding: '16px 18px',
           display: 'flex',
           alignItems: 'center',
-          gap: '16px',
+          gap: '14px',
           cursor: 'pointer',
           border: activeTab === 'pendientes' ? '2px solid #8b5cf6' : '1px solid var(--border-color)',
           backgroundColor: activeTab === 'pendientes' ? 'var(--primary-light)' : 'var(--bg-card)',
@@ -37,8 +40,8 @@ export default function BrandeoStats({
         }}
       >
         <div style={{
-          width: '48px',
-          height: '48px',
+          width: '46px',
+          height: '46px',
           borderRadius: '12px',
           backgroundColor: 'rgba(139, 92, 246, 0.15)',
           display: 'flex',
@@ -47,29 +50,29 @@ export default function BrandeoStats({
           color: 'var(--primary)',
           flexShrink: 0
         }}>
-          <AlertCircle size={26} />
+          <AlertCircle size={24} />
         </div>
         <div>
-          <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--primary)' }}>
+          <span style={{ fontSize: '0.74rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--primary)' }}>
             Falta por Brandear
           </span>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1 }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1, margin: 0 }}>
               {pendientesCount}
             </h2>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
               requieren brandeo
             </span>
           </div>
           {pendientesCount > 0 && (
-            <div style={{ display: 'flex', gap: '5px', marginTop: '6px', fontSize: '0.7rem', flexWrap: 'wrap' }}>
-              <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(139, 92, 246, 0.2)', color: '#c084fc', fontWeight: '800' }}>
+            <div style={{ display: 'flex', gap: '4px', marginTop: '4px', fontSize: '0.68rem', flexWrap: 'wrap' }}>
+              <span style={{ padding: '1px 5px', borderRadius: '4px', backgroundColor: 'rgba(139, 92, 246, 0.2)', color: '#c084fc', fontWeight: '800' }}>
                 🔥 {urgenteCount} Urgentes
               </span>
-              <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', fontWeight: '800' }}>
+              <span style={{ padding: '1px 5px', borderRadius: '4px', backgroundColor: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', fontWeight: '800' }}>
                 ⚡ {medioCount} Medios
               </span>
-              <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', fontWeight: '800' }}>
+              <span style={{ padding: '1px 5px', borderRadius: '4px', backgroundColor: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', fontWeight: '800' }}>
                 🟢 {bajoCount} Bajos
               </span>
             </div>
@@ -82,10 +85,10 @@ export default function BrandeoStats({
         onClick={() => setActiveTab('brandeados')}
         className="card"
         style={{
-          padding: '18px 20px',
+          padding: '16px 18px',
           display: 'flex',
           alignItems: 'center',
-          gap: '16px',
+          gap: '14px',
           cursor: 'pointer',
           border: activeTab === 'brandeados' ? '2px solid #10b981' : '1px solid var(--border-color)',
           backgroundColor: activeTab === 'brandeados' ? 'var(--success-light)' : 'var(--bg-card)',
@@ -94,8 +97,8 @@ export default function BrandeoStats({
         }}
       >
         <div style={{
-          width: '48px',
-          height: '48px',
+          width: '46px',
+          height: '46px',
           borderRadius: '12px',
           backgroundColor: 'rgba(16, 185, 129, 0.15)',
           display: 'flex',
@@ -104,111 +107,117 @@ export default function BrandeoStats({
           color: 'var(--success)',
           flexShrink: 0
         }}>
-          <CheckCircle2 size={26} />
+          <CheckCircle2 size={24} />
         </div>
         <div>
-          <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--success)' }}>
+          <span style={{ fontSize: '0.74rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--success)' }}>
             Equipos Brandeados
           </span>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1 }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1, margin: 0 }}>
               {brandeadosCount}
             </h2>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
               completados
             </span>
           </div>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+            Avance global: {percentage}%
+          </span>
         </div>
       </div>
 
-      {/* 3. Total de Equipos Registrados */}
+      {/* 3. Brandeo Disponible (Stock de Vinilos/Kits) */}
       <div 
-        onClick={() => setActiveTab('todos')}
+        onClick={() => setActiveTab('inventario')}
         className="card"
         style={{
-          padding: '18px 20px',
+          padding: '16px 18px',
           display: 'flex',
           alignItems: 'center',
-          gap: '16px',
+          gap: '14px',
           cursor: 'pointer',
-          border: activeTab === 'todos' ? '2px solid #0284c7' : '1px solid var(--border-color)',
-          backgroundColor: activeTab === 'todos' ? 'var(--info-light)' : 'var(--bg-card)',
-          transition: 'all 0.2s ease'
+          border: activeTab === 'inventario' ? '2px solid #06b6d4' : '1px solid var(--border-color)',
+          backgroundColor: activeTab === 'inventario' ? 'rgba(6, 182, 212, 0.12)' : 'var(--bg-card)',
+          transition: 'all 0.2s ease',
+          boxShadow: activeTab === 'inventario' ? '0 4px 12px rgba(6, 182, 212, 0.25)' : 'var(--shadow-sm)'
         }}
       >
         <div style={{
-          width: '48px',
-          height: '48px',
+          width: '46px',
+          height: '46px',
           borderRadius: '12px',
-          backgroundColor: 'rgba(2, 132, 199, 0.15)',
+          backgroundColor: 'rgba(6, 182, 212, 0.15)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'var(--info)',
+          color: '#06b6d4',
           flexShrink: 0
         }}>
-          <Layers size={26} />
+          <Package size={24} />
         </div>
         <div>
-          <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--info)' }}>
-            Total Registrados
+          <span style={{ fontSize: '0.74rem', fontWeight: '700', textTransform: 'uppercase', color: '#06b6d4' }}>
+            Brandeo Disponible
           </span>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1 }}>
-              {totalEquipos}
+            <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1, margin: 0 }}>
+              {totalStockDisponible}
             </h2>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              en base de datos
+            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+              kits en taller
             </span>
           </div>
+          <span style={{ fontSize: '0.72rem', color: '#06b6d4', fontWeight: '600', marginTop: '4px', display: 'block' }}>
+            📦 Ver stock por máquina ➔
+          </span>
         </div>
       </div>
 
-      {/* 4. Avance de Brandeo (%) */}
+      {/* 4. Solicitudes de Brandeo (Pedidos Semanales) */}
       <div 
+        onClick={() => setActiveTab('solicitudes')}
         className="card"
         style={{
-          padding: '18px 20px',
+          padding: '16px 18px',
           display: 'flex',
           alignItems: 'center',
-          gap: '16px'
+          gap: '14px',
+          cursor: 'pointer',
+          border: activeTab === 'solicitudes' ? '2px solid #f59e0b' : '1px solid var(--border-color)',
+          backgroundColor: activeTab === 'solicitudes' ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-card)',
+          transition: 'all 0.2s ease',
+          boxShadow: activeTab === 'solicitudes' ? '0 4px 12px rgba(245, 158, 11, 0.25)' : 'var(--shadow-sm)'
         }}
       >
         <div style={{
-          width: '48px',
-          height: '48px',
+          width: '46px',
+          height: '46px',
           borderRadius: '12px',
           backgroundColor: 'rgba(245, 158, 11, 0.15)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'var(--warning)',
+          color: '#f59e0b',
           flexShrink: 0
         }}>
-          <TrendingUp size={26} />
+          <ShoppingCart size={24} />
         </div>
-        <div style={{ flex: 1 }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--warning)' }}>
-            Avance de Brandeo
+        <div>
+          <span style={{ fontSize: '0.74rem', fontWeight: '700', textTransform: 'uppercase', color: '#f59e0b' }}>
+            Solicitudes / Pedidos
           </span>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '6px' }}>
-            <h2 style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1 }}>
-              {percentage}%
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1, margin: 0 }}>
+              {pedidosPendientesCount}
             </h2>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {brandeadosCount} de {pendientesCount + brandeadosCount}
+            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+              {pedidosPendientesCount === 1 ? 'pedido pendiente' : 'pedidos pendientes'}
             </span>
           </div>
-          {/* Progress bar */}
-          <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-            <div style={{
-              width: `${percentage}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, #8b5cf6, #10b981)',
-              borderRadius: '3px',
-              transition: 'width 0.4s ease'
-            }} />
-          </div>
+          <span style={{ fontSize: '0.72rem', color: '#f59e0b', fontWeight: '600', marginTop: '4px', display: 'block' }}>
+            🚚 {unidadesEnTransito} kits en camino ➔
+          </span>
         </div>
       </div>
     </div>

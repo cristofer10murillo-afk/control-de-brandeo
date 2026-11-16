@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, setDoc, addDoc, increment } from 'firebase/firestore';
 import confetti from 'canvas-confetti';
 import { db } from './firebase';
 import BrandeoNavbar from './components/BrandeoNavbar';
@@ -7,14 +7,19 @@ import BrandeoStats from './components/BrandeoStats';
 import BrandeoFilters from './components/BrandeoFilters';
 import BrandeoTable from './components/BrandeoTable';
 import BrandeoReportesView from './components/BrandeoReportesView';
+import BrandeoInventarioView from './components/BrandeoInventarioView';
+import BrandeoSolicitudesView from './components/BrandeoSolicitudesView';
 import ConfirmBrandeoModal from './components/ConfirmBrandeoModal';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { exportBrandeoToExcel } from './utils/exportUtils';
-import { createBrandeoRecord } from './utils/dateUtils';
+import { createBrandeoRecord, getCurrentPeriodInfo } from './utils/dateUtils';
+import { DEFAULT_BRANDING_MODELS } from './utils/inventarioUtils';
 import { AlertCircle, CheckCircle, Info } from 'lucide-react';
 
 export default function App() {
   const [equipos, setEquipos] = useState([]);
+  const [inventario, setInventario] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isLive, setIsLive] = useState(false);
@@ -23,9 +28,9 @@ export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('brandeo_theme') || 'dark');
   const [activeBrander, setActiveBrander] = useState(() => localStorage.getItem('last_brander_name') || '');
 
-  // Filters & Tabs
+  // Filters & Tabs: 'pendientes' | 'brandeados' | 'inventario' | 'solicitudes' | 'reportes' | 'todos'
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('pendientes'); // 'pendientes' | 'brandeados' | 'reportes' | 'todos'
+  const [activeTab, setActiveTab] = useState('pendientes');
   const [tipoFiltro, setTipoFiltro] = useState('Todos');
   const [prioridadFiltro, setPrioridadFiltro] = useState('TODAS'); // 'TODAS' | 'URGENTE' | 'MEDIO' | 'BAJO'
 
@@ -53,7 +58,7 @@ export default function App() {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  // Real-time synchronization with Firestore "equipos" collection
+  // 1. Real-time synchronization with Firestore "equipos" collection
   useEffect(() => {
     if (!db) {
       setError('Firebase no está configurado. Por favor verifica las credenciales en .env');
@@ -89,7 +94,69 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Compute counts
+  // 2. Real-time synchronization with Firestore "inventario_brandeo" collection
+  useEffect(() => {
+    if (!db) return;
+    const invRef = collection(db, 'inventario_brandeo');
+
+    const unsubscribe = onSnapshot(
+      invRef,
+      (snapshot) => {
+        if (snapshot.empty) {
+          // Auto-seed default models:
+          // Maestro: 8, Opera Britt: 15, Opera Leyenda: 10, Snack Britt: 10, Snack Leyenda: 10
+          DEFAULT_BRANDING_MODELS.forEach(async (m) => {
+            try {
+              await setDoc(doc(db, 'inventario_brandeo', m.id), {
+                ...m,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+              });
+            } catch (e) {
+              console.error('Error seeding inventory model:', e);
+            }
+          });
+        } else {
+          const list = snapshot.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }));
+          list.sort((a, b) => (a.modelo || '').localeCompare(b.modelo || ''));
+          setInventario(list);
+        }
+      },
+      (err) => {
+        console.error('Error fetching inventario_brandeo:', err);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // 3. Real-time synchronization with Firestore "solicitudes_brandeo" collection
+  useEffect(() => {
+    if (!db) return;
+    const solRef = collection(db, 'solicitudes_brandeo');
+
+    const unsubscribe = onSnapshot(
+      solRef,
+      (snapshot) => {
+        const list = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }));
+        list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        setSolicitudes(list);
+      },
+      (err) => {
+        console.error('Error fetching solicitudes_brandeo:', err);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // Compute counts for Equipos
   const pendientesCount = useMemo(() => {
     return equipos.filter(eq => eq.requiereBrandeo === true).length;
   }, [equipos]);
@@ -120,6 +187,23 @@ export default function App() {
     });
     return Array.from(set).sort();
   }, [equipos]);
+
+  // Compute counts for Inventario & Solicitudes
+  const totalStockDisponible = useMemo(() => {
+    return inventario.reduce((acc, curr) => acc + (Number(curr.disponibles) || 0), 0);
+  }, [inventario]);
+
+  const { pedidosPendientesCount, unidadesEnTransito } = useMemo(() => {
+    let count = 0;
+    let kits = 0;
+    solicitudes.forEach(sol => {
+      if (sol.estado === 'PENDIENTE') {
+        count++;
+        kits += Number(sol.totalUnidades) || 0;
+      }
+    });
+    return { pedidosPendientesCount: count, unidadesEnTransito: kits };
+  }, [solicitudes]);
 
   // Filtered equipments for list view
   const filteredEquipos = useMemo(() => {
@@ -152,6 +236,7 @@ export default function App() {
           eq.lugar,
           eq.tecnico,
           eq.usuarioBrandeo,
+          eq.tipoBrandeoUsado,
           eq.fechaBrandeo,
           eq.semanaBrandeo,
           eq.prioridadBrandeo
@@ -185,23 +270,130 @@ export default function App() {
     setModalEquipo(eq);
   };
 
-  // Confirm Brandeo: ONLY here is the exact date, time, week & month recorded!
+  // Confirm Brandeo: Records timestamp, removes highlight, and DEDUCTS 1 unit from stock!
   const handleConfirmBrandeo = async (id, extraData = {}) => {
     if (!db) return;
     try {
       const brandeoRecord = createBrandeoRecord({
         usuarioBrandeo: extraData.usuarioBrandeo || activeBrander || 'Técnico de Brandeo',
-        comentariosBrandeo: extraData.comentariosBrandeo || ''
+        comentariosBrandeo: extraData.comentariosBrandeo || '',
+        tipoBrandeoUsado: extraData.tipoBrandeoUsado || ''
       });
 
+      // 1. Guardar en equipos
       await updateDoc(doc(db, 'equipos', id), brandeoRecord);
+
+      // 2. Descontar 1 unidad del inventario disponible
+      let kitDescontado = null;
+      if (extraData.inventarioId) {
+        const itemInv = inventario.find(i => i.id === extraData.inventarioId);
+        if (itemInv) {
+          const nuevoSaldo = Math.max(0, (Number(itemInv.disponibles) || 0) - 1);
+          await updateDoc(doc(db, 'inventario_brandeo', itemInv.id), {
+            disponibles: nuevoSaldo,
+            totalConsumidos: increment(1),
+            updatedAt: Date.now()
+          });
+          kitDescontado = itemInv.modelo;
+        }
+      }
 
       setModalEquipo(null);
       triggerConfetti();
-      showToast(`¡Brandeo guardado con éxito a las ${brandeoRecord.horaBrandeo}! Se retiró el color en Gestor de Equipos.`, 'success');
+      const msgKit = kitDescontado ? ` y se descontó 1 kit de ${kitDescontado}` : '';
+      showToast(`¡Brandeo guardado con éxito a las ${brandeoRecord.horaBrandeo}! Se retiró el color en Gestor de Equipos${msgKit}.`, 'success');
     } catch (err) {
       console.error('Error confirming brandeo:', err);
       showToast('Error al actualizar en Firebase. Intente nuevamente.', 'danger');
+    }
+  };
+
+  // Update Stock manually
+  const handleUpdateStock = async (id, newDisponibles) => {
+    if (!db) return;
+    try {
+      await updateDoc(doc(db, 'inventario_brandeo', id), {
+        disponibles: Math.max(0, newDisponibles),
+        updatedAt: Date.now()
+      });
+      showToast('Stock de brandeo actualizado.', 'info');
+    } catch (err) {
+      console.error('Error updating stock:', err);
+      showToast('Error al actualizar el stock.', 'danger');
+    }
+  };
+
+  // Add new machine model to inventory
+  const handleAddNewModel = async (newModelData) => {
+    if (!db) return;
+    try {
+      await setDoc(doc(db, 'inventario_brandeo', newModelData.id), {
+        ...newModelData,
+        updatedAt: Date.now()
+      });
+      showToast(`Modelo "${newModelData.modelo}" registrado en inventario.`, 'success');
+    } catch (err) {
+      console.error('Error adding new model:', err);
+      showToast('Error al registrar nuevo modelo.', 'danger');
+    }
+  };
+
+  // Save new weekly request / order
+  const handleCreateSolicitud = async (solicitudData) => {
+    if (!db) return;
+    try {
+      await addDoc(collection(db, 'solicitudes_brandeo'), solicitudData);
+      triggerConfetti();
+      showToast(`¡Solicitud ${solicitudData.numeroSolicitud} guardada con éxito (${solicitudData.totalUnidades} kits)!`, 'success');
+    } catch (err) {
+      console.error('Error creating solicitud:', err);
+      showToast('Error al guardar la solicitud de brandeo.', 'danger');
+    }
+  };
+
+  // Mark request as received (Transfer to available inventory)
+  const handleRecibirSolicitud = async (solicitud) => {
+    if (!db) return;
+    try {
+      const info = getCurrentPeriodInfo();
+
+      // 1. Ingresar cantidades al inventario disponible
+      for (const item of (solicitud.items || [])) {
+        const invItem = inventario.find(i => i.id === item.id || (i.modelo || '').toLowerCase() === (item.modelo || '').toLowerCase());
+        if (invItem) {
+          await updateDoc(doc(db, 'inventario_brandeo', invItem.id), {
+            disponibles: increment(Number(item.cantidad) || 0),
+            updatedAt: Date.now()
+          });
+        } else {
+          // If model doesn't exist, create it
+          await setDoc(doc(db, 'inventario_brandeo', item.id), {
+            id: item.id,
+            modelo: item.modelo,
+            disponibles: Number(item.cantidad) || 0,
+            minimoAlerta: 3,
+            totalConsumidos: 0,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+          });
+        }
+      }
+
+      // 2. Marcar la solicitud como RECIBIDO
+      await updateDoc(doc(db, 'solicitudes_brandeo', solicitud.id), {
+        estado: 'RECIBIDO',
+        fechaRecepcion: info.fechaCorta,
+        horaRecepcion: info.horaCorta,
+        timestampRecepcion: Date.now(),
+        recibidoPor: activeBrander || 'Técnico de Taller',
+        updatedAt: Date.now()
+      });
+
+      triggerConfetti();
+      showToast(`¡Pedido ${solicitud.numeroSolicitud} recibido! Se agregaron ${solicitud.totalUnidades} kits al stock disponible.`, 'success');
+    } catch (err) {
+      console.error('Error receiving solicitud:', err);
+      showToast('Error al ingresar el pedido al inventario.', 'danger');
     }
   };
 
@@ -224,6 +416,7 @@ export default function App() {
         payload.horaBrandeo = '';
         payload.mesBrandeo = '';
         payload.semanaBrandeo = '';
+        payload.tipoBrandeoUsado = '';
       }
 
       await updateDoc(doc(db, 'equipos', eq.id), payload);
@@ -335,6 +528,9 @@ export default function App() {
           urgenteCount={urgenteCount}
           medioCount={medioCount}
           bajoCount={bajoCount}
+          totalStockDisponible={totalStockDisponible}
+          pedidosPendientesCount={pedidosPendientesCount}
+          unidadesEnTransito={unidadesEnTransito}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
@@ -345,6 +541,8 @@ export default function App() {
           setActiveTab={setActiveTab}
           pendientesCount={pendientesCount}
           brandeadosCount={brandeadosCount}
+          totalStockDisponible={totalStockDisponible}
+          pedidosPendientesCount={pedidosPendientesCount}
           totalCount={equipos.length}
           tipoFiltro={tipoFiltro}
           setTipoFiltro={setTipoFiltro}
@@ -362,11 +560,31 @@ export default function App() {
           <div className="card" style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p style={{ fontSize: '1rem', fontWeight: '600' }}>Cargando datos desde Firebase...</p>
           </div>
+        ) : activeTab === 'inventario' ? (
+          /* View 1: Brandeo Disponible / Stock por modelo */
+          <BrandeoInventarioView
+            inventario={inventario}
+            solicitudes={solicitudes}
+            onUpdateStock={handleUpdateStock}
+            onAddNewModel={handleAddNewModel}
+            onNavigateToSolicitudes={() => setActiveTab('solicitudes')}
+            theme={theme}
+          />
+        ) : activeTab === 'solicitudes' ? (
+          /* View 2: Solicitud de Brandeo / Carrito y Control Semanal */
+          <BrandeoSolicitudesView
+            inventario={inventario}
+            solicitudes={solicitudes}
+            onCreateSolicitud={handleCreateSolicitud}
+            onRecibirSolicitud={handleRecibirSolicitud}
+            activeBrander={activeBrander}
+            theme={theme}
+          />
         ) : activeTab === 'reportes' ? (
-          /* View 1: Weekly and Monthly Analytics */
+          /* View 3: Weekly and Monthly Analytics */
           <BrandeoReportesView equipos={equipos} theme={theme} />
         ) : (
-          /* View 2: Panoramic Table & Mobile Cards */
+          /* View 4: Panoramic Table & Mobile Cards */
           <BrandeoTable
             equipos={filteredEquipos}
             activeTab={activeTab}
@@ -400,6 +618,7 @@ export default function App() {
       {modalEquipo && (
         <ConfirmBrandeoModal
           equipo={modalEquipo}
+          inventario={inventario}
           defaultBrander={activeBrander}
           onClose={() => setModalEquipo(null)}
           onConfirm={handleConfirmBrandeo}

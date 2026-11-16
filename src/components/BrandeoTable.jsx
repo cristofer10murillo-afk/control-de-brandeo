@@ -238,6 +238,11 @@ export default function BrandeoTable({
                         <span style={{ color: 'var(--success)', fontWeight: '800', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
                           <Check size={13} /> {eq.fechaBrandeo || 'Completado'}
                         </span>
+                        {eq.tipoBrandeoUsado && (
+                          <span style={{ fontSize: '0.72rem', color: '#06b6d4', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                            📦 Kit: {eq.tipoBrandeoUsado}
+                          </span>
+                        )}
                         {eq.semanaBrandeo && (
                           <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>
                             {eq.semanaBrandeo} ({eq.mesBrandeo || ''})
@@ -353,9 +358,16 @@ export default function BrandeoTable({
                   alignItems: 'center',
                   justifyContent: 'space-between'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--success)', fontWeight: '700' }}>
-                    <Clock size={14} />
-                    <span>{eq.fechaBrandeo}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--success)', fontWeight: '700' }}>
+                      <Clock size={14} />
+                      <span>{eq.fechaBrandeo}</span>
+                    </div>
+                    {eq.tipoBrandeoUsado && (
+                      <span style={{ fontSize: '0.72rem', color: '#06b6d4', fontWeight: '700' }}>
+                        📦 Kit: {eq.tipoBrandeoUsado}
+                      </span>
+                    )}
                   </div>
                   {eq.usuarioBrandeo && (
                     <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>

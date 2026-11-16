@@ -85,7 +85,40 @@ export const createBrandeoRecord = (extraData = {}) => {
     mesAñoBrandeo: `${mesName} ${year}`,
     usuarioBrandeo: extraData.usuarioBrandeo || 'Técnico de Brandeo',
     comentariosBrandeo: extraData.comentariosBrandeo || '',
+    tipoBrandeoUsado: extraData.tipoBrandeoUsado || '',
     updatedAt: now.getTime()
+  };
+};
+
+/**
+ * Obtiene la información del período actual (Semana, Mes, Año, Fecha, Hora)
+ */
+export const getCurrentPeriodInfo = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const monthIdx = now.getMonth();
+  const day = now.getDate();
+  const mesName = MESES_NOMBRES[monthIdx];
+  const semanaNum = getSemanaNumFromDate(year, monthIdx, day);
+  const semanaName = `Semana ${semanaNum}`;
+
+  const fechaCorta = `${String(day).padStart(2, '0')}/${String(monthIdx + 1).padStart(2, '0')}/${year}`;
+  const horaCorta = now.toLocaleTimeString('es-CR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  return {
+    year,
+    monthIdx,
+    mesName,
+    semanaNum,
+    semanaName,
+    fechaCorta,
+    horaCorta,
+    mesAño: `${mesName} ${year}`,
+    timestamp: now.getTime()
   };
 };
 
