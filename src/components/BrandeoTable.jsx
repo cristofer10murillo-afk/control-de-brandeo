@@ -68,8 +68,11 @@ export default function BrandeoTable({
               <th style={{ padding: '11px 14px', width: '235px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Confirmación de Brandeo
               </th>
-              <th style={{ padding: '11px 14px', minWidth: '170px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', minWidth: '160px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Equipo / Modelo
+              </th>
+              <th style={{ padding: '11px 14px', width: '130px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+                Prioridad
               </th>
               <th style={{ padding: '11px 14px', width: '120px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Activo
@@ -183,16 +186,16 @@ export default function BrandeoTable({
                   </td>
 
                   {/* Equipo / Modelo */}
-                  <td style={{ padding: '9px 12px', fontWeight: '700', color: '#0284c7' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '0.9rem' }}>{eq.tipoEquipo || eq.modelo || 'Sin Tipo'}</span>
-                      {isPendiente && (
-                        <BrandeoPriorityBadge 
-                          equipo={eq}
-                          onUpdatePriority={onUpdatePrioridad}
-                        />
-                      )}
-                    </div>
+                  <td style={{ padding: '9px 14px', fontWeight: '700', color: '#0284c7' }}>
+                    <span style={{ fontSize: '0.9rem' }}>{eq.tipoEquipo || eq.modelo || 'Sin Tipo'}</span>
+                  </td>
+
+                  {/* Prioridad */}
+                  <td style={{ padding: '9px 14px' }}>
+                    <BrandeoPriorityBadge 
+                      equipo={eq}
+                      onUpdatePriority={onUpdatePrioridad}
+                    />
                   </td>
 
                   {/* Activo */}

@@ -75,7 +75,6 @@ export default function BrandeoPriorityBadge({
         display: 'inline-flex', 
         alignItems: 'center',
         verticalAlign: 'middle',
-        marginLeft: '6px',
         ...style 
       }}
       onClick={(e) => e.stopPropagation()}

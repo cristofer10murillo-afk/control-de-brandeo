@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Lock, Mail, Eye, EyeOff, ShieldCheck, Sparkles, UserCheck } from 'lucide-react';
-import { DEFAULT_USERS, getRoleInfo } from '../utils/authUtils';
+import { Lock, Mail, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { DEFAULT_USERS } from '../utils/authUtils';
 
 export default function LoginScreen({ onLogin, users = [] }) {
   const [email, setEmail] = useState('');
@@ -25,23 +25,10 @@ export default function LoginScreen({ onLogin, users = [] }) {
     );
 
     if (matched) {
-      // Store session
       onLogin(matched);
     } else {
       setError('Credenciales incorrectas. Verifica tu correo y contraseña.');
       setLoading(false);
-    }
-  };
-
-  const handleQuickLogin = (demoEmail, demoPass) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setError('');
-    const matched = userPool.find(u => 
-      u.email.toLowerCase() === demoEmail.toLowerCase() && u.password === demoPass
-    );
-    if (matched) {
-      onLogin(matched);
     }
   };
 
@@ -57,15 +44,15 @@ export default function LoginScreen({ onLogin, users = [] }) {
     }}>
       <div className="card" style={{
         width: '100%',
-        maxWidth: '440px',
-        padding: '32px 28px',
+        maxWidth: '420px',
+        padding: '36px 30px',
         borderRadius: '16px',
         backgroundColor: 'var(--bg-card, #1e293b)',
         border: '1px solid rgba(139, 92, 246, 0.3)',
         boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 25px rgba(139, 92, 246, 0.2)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '20px'
+        gap: '22px'
       }}>
         
         {/* Header with App Logo */}
@@ -93,7 +80,7 @@ export default function LoginScreen({ onLogin, users = [] }) {
             Control de Brandeo PRO
           </h1>
           <p style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', margin: 0 }}>
-            Inicia sesión para ingresar al sistema de gestión
+            Inicia sesión con tu cuenta para ingresar al sistema
           </p>
         </div>
 
@@ -140,7 +127,7 @@ export default function LoginScreen({ onLogin, users = [] }) {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
-              style={{ height: '42px', fontSize: '0.9rem' }}
+              style={{ height: '44px', fontSize: '0.9rem' }}
             />
           </div>
 
@@ -166,7 +153,7 @@ export default function LoginScreen({ onLogin, users = [] }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{ height: '42px', fontSize: '0.9rem', paddingRight: '40px' }}
+                style={{ height: '44px', fontSize: '0.9rem', paddingRight: '40px' }}
               />
               <button
                 type="button"
@@ -202,98 +189,13 @@ export default function LoginScreen({ onLogin, users = [] }) {
               justifyContent: 'center',
               gap: '8px',
               boxShadow: '0 4px 16px rgba(139, 92, 246, 0.4)',
-              marginTop: '4px'
+              marginTop: '8px'
             }}
           >
             <ShieldCheck size={18} />
             <span>{loading ? 'Verificando...' : 'Iniciar Sesión'}</span>
           </button>
         </form>
-
-        {/* Demo / Quick Access Buttons */}
-        <div style={{
-          marginTop: '6px',
-          paddingTop: '16px',
-          borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px'
-        }}>
-          <span style={{ fontSize: '0.74rem', color: 'var(--text-muted, #94a3b8)', textTransform: 'uppercase', fontWeight: '800', textAlign: 'center' }}>
-            Acceso Rápido por Rol
-          </span>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {/* Master */}
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('cristofer10murillo@gmail.com', 'Shariton24')}
-              style={{
-                padding: '9px 12px',
-                borderRadius: '8px',
-                border: '1px solid rgba(192, 132, 252, 0.4)',
-                backgroundColor: 'rgba(192, 132, 252, 0.1)',
-                color: '#c084fc',
-                fontSize: '0.8rem',
-                fontWeight: '700',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <span>👑 Ingresar como <strong>Master</strong> (Cristofer)</span>
-              <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>Shariton24 ➔</span>
-            </button>
-
-            {/* Admin Secundario */}
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@taller.com', 'Admin2026*')}
-              style={{
-                padding: '9px 12px',
-                borderRadius: '8px',
-                border: '1px solid rgba(56, 189, 248, 0.4)',
-                backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                color: '#38bdf8',
-                fontSize: '0.8rem',
-                fontWeight: '700',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <span>🛡️ Ingresar como <strong>Admin Secundario</strong></span>
-              <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>Admin2026* ➔</span>
-            </button>
-
-            {/* Brandeador */}
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('brandeo@taller.com', 'Brandeo2026*')}
-              style={{
-                padding: '9px 12px',
-                borderRadius: '8px',
-                border: '1px solid rgba(52, 211, 153, 0.4)',
-                backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                color: '#34d399',
-                fontSize: '0.8rem',
-                fontWeight: '700',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <span>🎨 Ingresar como <strong>Brandeador</strong> (Solo marcar/descontar)</span>
-              <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>Brandeo2026* ➔</span>
-            </button>
-          </div>
-        </div>
 
       </div>
     </div>
