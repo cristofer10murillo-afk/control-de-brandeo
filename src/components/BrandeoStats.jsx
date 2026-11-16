@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, CheckCircle2, Layers, Flame, TrendingUp, Package, ShoppingCart } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Package, ShoppingCart } from 'lucide-react';
 
 export default function BrandeoStats({
   totalEquipos = 0,
@@ -12,14 +12,16 @@ export default function BrandeoStats({
   pedidosPendientesCount = 0,
   unidadesEnTransito = 0,
   activeTab,
-  setActiveTab
+  setActiveTab,
+  currentUser
 }) {
+  const isBrandeador = (currentUser?.rol || '').toLowerCase() === 'brandeador';
   const percentage = totalEquipos > 0 ? Math.round((brandeadosCount / (pendientesCount + brandeadosCount || 1)) * 100) : 0;
 
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+      gridTemplateColumns: isBrandeador ? 'repeat(auto-fit, minmax(280px, 1fr))' : 'repeat(auto-fit, minmax(230px, 1fr))',
       gap: '14px',
       marginBottom: '20px'
     }}>
@@ -82,14 +84,16 @@ export default function BrandeoStats({
 
       {/* 2. Equipos Brandeados (Realizados) */}
       <div 
-        onClick={() => setActiveTab('brandeados')}
+        onClick={() => {
+          if (!isBrandeador) setActiveTab('brandeados');
+        }}
         className="card"
         style={{
           padding: '16px 18px',
           display: 'flex',
           alignItems: 'center',
           gap: '14px',
-          cursor: 'pointer',
+          cursor: isBrandeador ? 'default' : 'pointer',
           border: activeTab === 'brandeados' ? '2px solid #10b981' : '1px solid var(--border-color)',
           backgroundColor: activeTab === 'brandeados' ? 'var(--success-light)' : 'var(--bg-card)',
           transition: 'all 0.2s ease',
@@ -127,99 +131,103 @@ export default function BrandeoStats({
         </div>
       </div>
 
-      {/* 3. Brandeo Disponible (Stock de Vinilos/Kits) */}
-      <div 
-        onClick={() => setActiveTab('inventario')}
-        className="card"
-        style={{
-          padding: '16px 18px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-          cursor: 'pointer',
-          border: activeTab === 'inventario' ? '2px solid #06b6d4' : '1px solid var(--border-color)',
-          backgroundColor: activeTab === 'inventario' ? 'rgba(6, 182, 212, 0.12)' : 'var(--bg-card)',
-          transition: 'all 0.2s ease',
-          boxShadow: activeTab === 'inventario' ? '0 4px 12px rgba(6, 182, 212, 0.25)' : 'var(--shadow-sm)'
-        }}
-      >
-        <div style={{
-          width: '46px',
-          height: '46px',
-          borderRadius: '12px',
-          backgroundColor: 'rgba(6, 182, 212, 0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#06b6d4',
-          flexShrink: 0
-        }}>
-          <Package size={24} />
-        </div>
-        <div>
-          <span style={{ fontSize: '0.74rem', fontWeight: '700', textTransform: 'uppercase', color: '#06b6d4' }}>
-            Brandeo Disponible
-          </span>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1, margin: 0 }}>
-              {totalStockDisponible}
-            </h2>
-            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-              kits en taller
+      {/* 3. Brandeo Disponible (Stock) - Oculto para Brandeador */}
+      {!isBrandeador && (
+        <div 
+          onClick={() => setActiveTab('inventario')}
+          className="card"
+          style={{
+            padding: '16px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            cursor: 'pointer',
+            border: activeTab === 'inventario' ? '2px solid #06b6d4' : '1px solid var(--border-color)',
+            backgroundColor: activeTab === 'inventario' ? 'rgba(6, 182, 212, 0.12)' : 'var(--bg-card)',
+            transition: 'all 0.2s ease',
+            boxShadow: activeTab === 'inventario' ? '0 4px 12px rgba(6, 182, 212, 0.25)' : 'var(--shadow-sm)'
+          }}
+        >
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(6, 182, 212, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#06b6d4',
+            flexShrink: 0
+          }}>
+            <Package size={24} />
+          </div>
+          <div>
+            <span style={{ fontSize: '0.74rem', fontWeight: '700', textTransform: 'uppercase', color: '#06b6d4' }}>
+              Brandeo Disponible
+            </span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1, margin: 0 }}>
+                {totalStockDisponible}
+              </h2>
+              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                kits en taller
+              </span>
+            </div>
+            <span style={{ fontSize: '0.72rem', color: '#06b6d4', fontWeight: '600', marginTop: '4px', display: 'block' }}>
+              📦 Ver stock por máquina ➔
             </span>
           </div>
-          <span style={{ fontSize: '0.72rem', color: '#06b6d4', fontWeight: '600', marginTop: '4px', display: 'block' }}>
-            📦 Ver stock por máquina ➔
-          </span>
         </div>
-      </div>
+      )}
 
-      {/* 4. Solicitudes de Brandeo (Pedidos Semanales) */}
-      <div 
-        onClick={() => setActiveTab('solicitudes')}
-        className="card"
-        style={{
-          padding: '16px 18px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-          cursor: 'pointer',
-          border: activeTab === 'solicitudes' ? '2px solid #f59e0b' : '1px solid var(--border-color)',
-          backgroundColor: activeTab === 'solicitudes' ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-card)',
-          transition: 'all 0.2s ease',
-          boxShadow: activeTab === 'solicitudes' ? '0 4px 12px rgba(245, 158, 11, 0.25)' : 'var(--shadow-sm)'
-        }}
-      >
-        <div style={{
-          width: '46px',
-          height: '46px',
-          borderRadius: '12px',
-          backgroundColor: 'rgba(245, 158, 11, 0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#f59e0b',
-          flexShrink: 0
-        }}>
-          <ShoppingCart size={24} />
-        </div>
-        <div>
-          <span style={{ fontSize: '0.74rem', fontWeight: '700', textTransform: 'uppercase', color: '#f59e0b' }}>
-            Solicitudes / Pedidos
-          </span>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1, margin: 0 }}>
-              {pedidosPendientesCount}
-            </h2>
-            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-              {pedidosPendientesCount === 1 ? 'pedido pendiente' : 'pedidos pendientes'}
+      {/* 4. Solicitudes de Brandeo (Pedidos) - Oculto para Brandeador */}
+      {!isBrandeador && (
+        <div 
+          onClick={() => setActiveTab('solicitudes')}
+          className="card"
+          style={{
+            padding: '16px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            cursor: 'pointer',
+            border: activeTab === 'solicitudes' ? '2px solid #f59e0b' : '1px solid var(--border-color)',
+            backgroundColor: activeTab === 'solicitudes' ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-card)',
+            transition: 'all 0.2s ease',
+            boxShadow: activeTab === 'solicitudes' ? '0 4px 12px rgba(245, 158, 11, 0.25)' : 'var(--shadow-sm)'
+          }}
+        >
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(245, 158, 11, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#f59e0b',
+            flexShrink: 0
+          }}>
+            <ShoppingCart size={24} />
+          </div>
+          <div>
+            <span style={{ fontSize: '0.74rem', fontWeight: '700', textTransform: 'uppercase', color: '#f59e0b' }}>
+              Solicitudes / Pedidos
+            </span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.1, margin: 0 }}>
+                {pedidosPendientesCount}
+              </h2>
+              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                {pedidosPendientesCount === 1 ? 'pedido pendiente' : 'pedidos pendientes'}
+              </span>
+            </div>
+            <span style={{ fontSize: '0.72rem', color: '#f59e0b', fontWeight: '600', marginTop: '4px', display: 'block' }}>
+              🚚 {unidadesEnTransito} kits en camino ➔
             </span>
           </div>
-          <span style={{ fontSize: '0.72rem', color: '#f59e0b', fontWeight: '600', marginTop: '4px', display: 'block' }}>
-            🚚 {unidadesEnTransito} kits en camino ➔
-          </span>
         </div>
-      </div>
+      )}
     </div>
   );
 }

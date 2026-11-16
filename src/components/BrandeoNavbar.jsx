@@ -1,17 +1,22 @@
 import React from 'react';
-import { Sparkles, Sun, Moon, Search, User, RefreshCw } from 'lucide-react';
+import { Sparkles, Sun, Moon, Search, User, RefreshCw, LogOut, Users } from 'lucide-react';
 import PWAInstallPrompt from './PWAInstallPrompt';
+import { getRoleInfo } from '../utils/authUtils';
 
 export default function BrandeoNavbar({
   theme,
   toggleTheme,
   searchTerm,
   setSearchTerm,
-  activeBrander,
-  onChangeBrander,
+  currentUser,
+  onLogout,
+  onOpenUsersModal,
   isLive,
   onRefresh
 }) {
+  const roleInfo = currentUser ? getRoleInfo(currentUser.rol) : null;
+  const isMaster = currentUser && (currentUser.rol || '').toLowerCase() === 'master';
+
   return (
     <header style={{
       backgroundColor: 'var(--bg-card)',
@@ -49,7 +54,7 @@ export default function BrandeoNavbar({
           />
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <h1 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+              <h1 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em', margin: 0 }}>
                 Control de Brandeo
               </h1>
               <span style={{
@@ -64,14 +69,14 @@ export default function BrandeoNavbar({
                 PRO
               </span>
             </div>
-            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0 }}>
               Sincronizado con Gestor de Equipos
             </p>
           </div>
         </div>
 
         {/* Center Search Input */}
-        <div style={{ flex: '1', maxWidth: '380px', minWidth: '200px', position: 'relative' }}>
+        <div style={{ flex: '1', maxWidth: '360px', minWidth: '180px', position: 'relative' }}>
           <Search size={16} style={{
             position: 'absolute',
             left: '12px',
@@ -129,16 +134,48 @@ export default function BrandeoNavbar({
             <span>{isLive ? 'En vivo' : 'Offline'}</span>
           </div>
 
-          {/* Active Brand Specialist Name */}
-          <button
-            onClick={onChangeBrander}
-            className="btn btn-outline"
-            style={{ padding: '6px 10px', height: '36px', fontSize: '0.8rem' }}
-            title="Cambiar la persona asignada al brandeo"
-          >
-            <User size={14} color="var(--primary)" />
-            <span>{activeBrander || 'Persona Brandeo'}</span>
-          </button>
+          {/* User Badge & Profile */}
+          {currentUser && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 10px',
+              borderRadius: '10px',
+              backgroundColor: roleInfo?.bg || 'var(--bg-surface)',
+              border: `1px solid ${roleInfo?.border || 'var(--border-color)'}`
+            }}>
+              <User size={14} color={roleInfo?.color || 'var(--primary)'} />
+              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: '800', color: 'var(--text-main)' }}>
+                  {currentUser.nombre || currentUser.email}
+                </span>
+                <span style={{ fontSize: '0.66rem', fontWeight: '700', color: roleInfo?.color }}>
+                  {roleInfo?.badge}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Master Users Management CTA */}
+          {isMaster && (
+            <button
+              onClick={onOpenUsersModal}
+              className="btn btn-outline"
+              style={{
+                padding: '6px 10px',
+                height: '36px',
+                fontSize: '0.78rem',
+                gap: '5px',
+                color: '#c084fc',
+                borderColor: 'rgba(192, 132, 252, 0.4)'
+              }}
+              title="Administrar usuarios y accesos"
+            >
+              <Users size={14} />
+              <span>Usuarios</span>
+            </button>
+          )}
 
           {/* Refresh manual */}
           <button
@@ -159,6 +196,26 @@ export default function BrandeoNavbar({
           >
             {theme === 'dark' ? <Sun size={15} color="#fbbf24" /> : <Moon size={15} color="#6366f1" />}
           </button>
+
+          {/* Logout button */}
+          {currentUser && (
+            <button
+              onClick={onLogout}
+              className="btn btn-outline"
+              style={{
+                padding: '6px 10px',
+                height: '36px',
+                fontSize: '0.78rem',
+                gap: '5px',
+                color: 'var(--danger)',
+                borderColor: 'rgba(239, 68, 68, 0.3)'
+              }}
+              title="Cerrar sesión"
+            >
+              <LogOut size={14} />
+              <span>Salir</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

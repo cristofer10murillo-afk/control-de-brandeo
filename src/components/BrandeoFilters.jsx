@@ -25,8 +25,10 @@ export default function BrandeoFilters({
   urgenteCount = 0,
   medioCount = 0,
   bajoCount = 0,
-  onExportExcel
+  onExportExcel,
+  currentUser
 }) {
+  const isBrandeador = (currentUser?.rol || '').toLowerCase() === 'brandeador';
   return (
     <div style={{
       display: 'flex',
@@ -88,172 +90,177 @@ export default function BrandeoFilters({
             </span>
           </button>
 
-          {/* 2. Brandeados */}
-          <button
-            onClick={() => setActiveTab('brandeados')}
-            style={{
-              padding: '9px 15px',
-              fontSize: '0.86rem',
-              fontWeight: '700',
-              borderRadius: '10px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              whiteSpace: 'nowrap',
-              backgroundColor: activeTab === 'brandeados' ? '#10b981' : 'var(--bg-surface)',
-              color: activeTab === 'brandeados' ? '#ffffff' : 'var(--text-main)',
-              boxShadow: activeTab === 'brandeados' ? '0 4px 10px rgba(16, 185, 129, 0.3)' : 'var(--shadow-sm)',
-              transition: 'all 0.2s ease',
-              flexShrink: 0
-            }}
-          >
-            <CheckCircle2 size={16} />
-            <span>Brandeados</span>
-            <span style={{
-              fontSize: '0.72rem',
-              fontWeight: '800',
-              padding: '2px 7px',
-              borderRadius: '10px',
-              backgroundColor: activeTab === 'brandeados' ? 'rgba(255, 255, 255, 0.25)' : 'var(--success-light)',
-              color: activeTab === 'brandeados' ? '#ffffff' : 'var(--success)'
-            }}>
-              {brandeadosCount}
-            </span>
-          </button>
+          {/* Tabs 2 a 6 solo para Master y Admin Secundario */}
+          {!isBrandeador && (
+            <>
+              {/* 2. Brandeados */}
+              <button
+                onClick={() => setActiveTab('brandeados')}
+                style={{
+                  padding: '9px 15px',
+                  fontSize: '0.86rem',
+                  fontWeight: '700',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  whiteSpace: 'nowrap',
+                  backgroundColor: activeTab === 'brandeados' ? '#10b981' : 'var(--bg-surface)',
+                  color: activeTab === 'brandeados' ? '#ffffff' : 'var(--text-main)',
+                  boxShadow: activeTab === 'brandeados' ? '0 4px 10px rgba(16, 185, 129, 0.3)' : 'var(--shadow-sm)',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0
+                }}
+              >
+                <CheckCircle2 size={16} />
+                <span>Brandeados</span>
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: '800',
+                  padding: '2px 7px',
+                  borderRadius: '10px',
+                  backgroundColor: activeTab === 'brandeados' ? 'rgba(255, 255, 255, 0.25)' : 'var(--success-light)',
+                  color: activeTab === 'brandeados' ? '#ffffff' : 'var(--success)'
+                }}>
+                  {brandeadosCount}
+                </span>
+              </button>
 
-          {/* 3. Brandeo Disponible (Stock) */}
-          <button
-            onClick={() => setActiveTab('inventario')}
-            style={{
-              padding: '9px 15px',
-              fontSize: '0.86rem',
-              fontWeight: '700',
-              borderRadius: '10px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              whiteSpace: 'nowrap',
-              backgroundColor: activeTab === 'inventario' ? '#06b6d4' : 'var(--bg-surface)',
-              color: activeTab === 'inventario' ? '#ffffff' : 'var(--text-main)',
-              boxShadow: activeTab === 'inventario' ? '0 4px 10px rgba(6, 182, 212, 0.3)' : 'var(--shadow-sm)',
-              transition: 'all 0.2s ease',
-              flexShrink: 0
-            }}
-          >
-            <Package size={16} />
-            <span>Brandeo Disponible</span>
-            <span style={{
-              fontSize: '0.72rem',
-              fontWeight: '800',
-              padding: '2px 7px',
-              borderRadius: '10px',
-              backgroundColor: activeTab === 'inventario' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(6, 182, 212, 0.15)',
-              color: activeTab === 'inventario' ? '#ffffff' : '#06b6d4'
-            }}>
-              {totalStockDisponible}
-            </span>
-          </button>
+              {/* 3. Brandeo Disponible (Stock) */}
+              <button
+                onClick={() => setActiveTab('inventario')}
+                style={{
+                  padding: '9px 15px',
+                  fontSize: '0.86rem',
+                  fontWeight: '700',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  whiteSpace: 'nowrap',
+                  backgroundColor: activeTab === 'inventario' ? '#06b6d4' : 'var(--bg-surface)',
+                  color: activeTab === 'inventario' ? '#ffffff' : 'var(--text-main)',
+                  boxShadow: activeTab === 'inventario' ? '0 4px 10px rgba(6, 182, 212, 0.3)' : 'var(--shadow-sm)',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0
+                }}
+              >
+                <Package size={16} />
+                <span>Brandeo Disponible</span>
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: '800',
+                  padding: '2px 7px',
+                  borderRadius: '10px',
+                  backgroundColor: activeTab === 'inventario' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(6, 182, 212, 0.15)',
+                  color: activeTab === 'inventario' ? '#ffffff' : '#06b6d4'
+                }}>
+                  {totalStockDisponible}
+                </span>
+              </button>
 
-          {/* 4. Solicitud de Brandeo (Pedidos / Carrito) */}
-          <button
-            onClick={() => setActiveTab('solicitudes')}
-            style={{
-              padding: '9px 15px',
-              fontSize: '0.86rem',
-              fontWeight: '700',
-              borderRadius: '10px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              whiteSpace: 'nowrap',
-              backgroundColor: activeTab === 'solicitudes' ? '#f59e0b' : 'var(--bg-surface)',
-              color: activeTab === 'solicitudes' ? '#ffffff' : 'var(--text-main)',
-              boxShadow: activeTab === 'solicitudes' ? '0 4px 10px rgba(245, 158, 11, 0.3)' : 'var(--shadow-sm)',
-              transition: 'all 0.2s ease',
-              flexShrink: 0
-            }}
-          >
-            <ShoppingCart size={16} />
-            <span>Solicitud de Brandeo</span>
-            {pedidosPendientesCount > 0 && (
-              <span style={{
-                fontSize: '0.72rem',
-                fontWeight: '800',
-                padding: '2px 7px',
-                borderRadius: '10px',
-                backgroundColor: activeTab === 'solicitudes' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(245, 158, 11, 0.2)',
-                color: activeTab === 'solicitudes' ? '#ffffff' : '#f59e0b'
-              }}>
-                {pedidosPendientesCount}
-              </span>
-            )}
-          </button>
+              {/* 4. Solicitud de Brandeo (Pedidos / Carrito) */}
+              <button
+                onClick={() => setActiveTab('solicitudes')}
+                style={{
+                  padding: '9px 15px',
+                  fontSize: '0.86rem',
+                  fontWeight: '700',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  whiteSpace: 'nowrap',
+                  backgroundColor: activeTab === 'solicitudes' ? '#f59e0b' : 'var(--bg-surface)',
+                  color: activeTab === 'solicitudes' ? '#ffffff' : 'var(--text-main)',
+                  boxShadow: activeTab === 'solicitudes' ? '0 4px 10px rgba(245, 158, 11, 0.3)' : 'var(--shadow-sm)',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0
+                }}
+              >
+                <ShoppingCart size={16} />
+                <span>Solicitud de Brandeo</span>
+                {pedidosPendientesCount > 0 && (
+                  <span style={{
+                    fontSize: '0.72rem',
+                    fontWeight: '800',
+                    padding: '2px 7px',
+                    borderRadius: '10px',
+                    backgroundColor: activeTab === 'solicitudes' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(245, 158, 11, 0.2)',
+                    color: activeTab === 'solicitudes' ? '#ffffff' : '#f59e0b'
+                  }}>
+                    {pedidosPendientesCount}
+                  </span>
+                )}
+              </button>
 
-          {/* 5. Métricas por Semana y Mes */}
-          <button
-            onClick={() => setActiveTab('reportes')}
-            style={{
-              padding: '9px 15px',
-              fontSize: '0.86rem',
-              fontWeight: '700',
-              borderRadius: '10px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              whiteSpace: 'nowrap',
-              backgroundColor: activeTab === 'reportes' ? '#6366f1' : 'var(--bg-surface)',
-              color: activeTab === 'reportes' ? '#ffffff' : 'var(--text-main)',
-              boxShadow: activeTab === 'reportes' ? '0 4px 10px rgba(99, 102, 241, 0.3)' : 'var(--shadow-sm)',
-              transition: 'all 0.2s ease',
-              flexShrink: 0
-            }}
-          >
-            <BarChart3 size={16} />
-            <span>Métricas Semanal / Mensual</span>
-          </button>
+              {/* 5. Métricas por Semana y Mes */}
+              <button
+                onClick={() => setActiveTab('reportes')}
+                style={{
+                  padding: '9px 15px',
+                  fontSize: '0.86rem',
+                  fontWeight: '700',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  whiteSpace: 'nowrap',
+                  backgroundColor: activeTab === 'reportes' ? '#6366f1' : 'var(--bg-surface)',
+                  color: activeTab === 'reportes' ? '#ffffff' : 'var(--text-main)',
+                  boxShadow: activeTab === 'reportes' ? '0 4px 10px rgba(99, 102, 241, 0.3)' : 'var(--shadow-sm)',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0
+                }}
+              >
+                <BarChart3 size={16} />
+                <span>Métricas Semanal / Mensual</span>
+              </button>
 
-          {/* 6. Todos los Equipos */}
-          <button
-            onClick={() => setActiveTab('todos')}
-            style={{
-              padding: '9px 15px',
-              fontSize: '0.86rem',
-              fontWeight: '700',
-              borderRadius: '10px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              whiteSpace: 'nowrap',
-              backgroundColor: activeTab === 'todos' ? '#0284c7' : 'var(--bg-surface)',
-              color: activeTab === 'todos' ? '#ffffff' : 'var(--text-main)',
-              boxShadow: activeTab === 'todos' ? '0 4px 10px rgba(2, 132, 199, 0.3)' : 'var(--shadow-sm)',
-              transition: 'all 0.2s ease',
-              flexShrink: 0
-            }}
-          >
-            <ListFilter size={16} />
-            <span>Todos</span>
-            <span style={{
-              fontSize: '0.72rem',
-              fontWeight: '800',
-              padding: '2px 7px',
-              borderRadius: '10px',
-              backgroundColor: activeTab === 'todos' ? 'rgba(255, 255, 255, 0.25)' : 'var(--info-light)',
-              color: activeTab === 'todos' ? '#ffffff' : 'var(--info)'
-            }}>
-              {totalCount}
-            </span>
-          </button>
+              {/* 6. Todos los Equipos */}
+              <button
+                onClick={() => setActiveTab('todos')}
+                style={{
+                  padding: '9px 15px',
+                  fontSize: '0.86rem',
+                  fontWeight: '700',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  whiteSpace: 'nowrap',
+                  backgroundColor: activeTab === 'todos' ? '#0284c7' : 'var(--bg-surface)',
+                  color: activeTab === 'todos' ? '#ffffff' : 'var(--text-main)',
+                  boxShadow: activeTab === 'todos' ? '0 4px 10px rgba(2, 132, 199, 0.3)' : 'var(--shadow-sm)',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0
+                }}
+              >
+                <ListFilter size={16} />
+                <span>Todos</span>
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: '800',
+                  padding: '2px 7px',
+                  borderRadius: '10px',
+                  backgroundColor: activeTab === 'todos' ? 'rgba(255, 255, 255, 0.25)' : 'var(--info-light)',
+                  color: activeTab === 'todos' ? '#ffffff' : 'var(--info)'
+                }}>
+                  {totalCount}
+                </span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Action Buttons */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, onSnapshot, doc, updateDoc, setDoc, addDoc, increment } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, setDoc, addDoc, deleteDoc, increment } from 'firebase/firestore';
 import confetti from 'canvas-confetti';
 import { db } from './firebase';
 import BrandeoNavbar from './components/BrandeoNavbar';
@@ -10,13 +10,29 @@ import BrandeoReportesView from './components/BrandeoReportesView';
 import BrandeoInventarioView from './components/BrandeoInventarioView';
 import BrandeoSolicitudesView from './components/BrandeoSolicitudesView';
 import ConfirmBrandeoModal from './components/ConfirmBrandeoModal';
+import LoginScreen from './components/LoginScreen';
+import UserManagementModal from './components/UserManagementModal';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { exportBrandeoToExcel } from './utils/exportUtils';
 import { createBrandeoRecord, getCurrentPeriodInfo } from './utils/dateUtils';
 import { DEFAULT_BRANDING_MODELS } from './utils/inventarioUtils';
+import { DEFAULT_USERS } from './utils/authUtils';
 import { AlertCircle, CheckCircle, Info } from 'lucide-react';
 
 export default function App() {
+  // Authentication & Current User State
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('brandeo_auth_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [users, setUsers] = useState([]);
+  const [showUsersModal, setShowUsersModal] = useState(false);
+
+  // Firestore Data Collections
   const [equipos, setEquipos] = useState([]);
   const [inventario, setInventario] = useState([]);
   const [solicitudes, setSolicitudes] = useState([]);
@@ -26,7 +42,10 @@ export default function App() {
 
   // Appearance & Personalization
   const [theme, setTheme] = useState(() => localStorage.getItem('brandeo_theme') || 'dark');
-  const [activeBrander, setActiveBrander] = useState(() => localStorage.getItem('last_brander_name') || '');
+  const [activeBrander, setActiveBrander] = useState(() => {
+    if (currentUser?.nombre) return currentUser.nombre;
+    return localStorage.getItem('last_brander_name') || '';
+  });
 
   // Filters & Tabs: 'pendientes' | 'brandeados' | 'inventario' | 'solicitudes' | 'reportes' | 'todos'
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,7 +77,56 @@ export default function App() {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  // 1. Real-time synchronization with Firestore "equipos" collection
+  // Restrict brandeador to only 'pendientes'
+  useEffect(() => {
+    if (currentUser && (currentUser.rol || '').toLowerCase() === 'brandeador') {
+      if (activeTab !== 'pendientes') {
+        setActiveTab('pendientes');
+      }
+    }
+  }, [currentUser, activeTab]);
+
+  // 1. Real-time synchronization with Firestore "usuarios_brandeo" collection
+  useEffect(() => {
+    if (!db) return;
+    const usersRef = collection(db, 'usuarios_brandeo');
+
+    const unsubscribe = onSnapshot(
+      usersRef,
+      (snapshot) => {
+        if (snapshot.empty) {
+          // Auto-seed default users:
+          // Master: cristofer10murillo@gmail.com / Shariton24
+          // Admin: admin@taller.com / Admin2026*
+          // Brandeador: brandeo@taller.com / Brandeo2026*
+          DEFAULT_USERS.forEach(async (u) => {
+            try {
+              await setDoc(doc(db, 'usuarios_brandeo', u.id), {
+                ...u,
+                createdAt: Date.now()
+              });
+            } catch (e) {
+              console.error('Error seeding user:', e);
+            }
+          });
+          setUsers(DEFAULT_USERS);
+        } else {
+          const list = snapshot.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }));
+          setUsers(list);
+        }
+      },
+      (err) => {
+        console.error('Error fetching usuarios_brandeo:', err);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // 2. Real-time synchronization with Firestore "equipos" collection
   useEffect(() => {
     if (!db) {
       setError('Firebase no está configurado. Por favor verifica las credenciales en .env');
@@ -94,7 +162,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // 2. Real-time synchronization with Firestore "inventario_brandeo" collection
+  // 3. Real-time synchronization with Firestore "inventario_brandeo" collection
   useEffect(() => {
     if (!db) return;
     const invRef = collection(db, 'inventario_brandeo');
@@ -133,7 +201,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // 3. Real-time synchronization with Firestore "solicitudes_brandeo" collection
+  // 4. Real-time synchronization with Firestore "solicitudes_brandeo" collection
   useEffect(() => {
     if (!db) return;
     const solRef = collection(db, 'solicitudes_brandeo');
@@ -233,7 +301,6 @@ export default function App() {
           eq.activo,
           eq.serie,
           eq.cliente,
-          eq.lugar,
           eq.tecnico,
           eq.usuarioBrandeo,
           eq.tipoBrandeoUsado,
@@ -265,6 +332,49 @@ export default function App() {
     }
   };
 
+  // Auth Handlers
+  const handleLogin = (user) => {
+    setCurrentUser(user);
+    localStorage.setItem('brandeo_auth_user', JSON.stringify(user));
+    setActiveBrander(user.nombre);
+    localStorage.setItem('last_brander_name', user.nombre);
+    if ((user.rol || '').toLowerCase() === 'brandeador') {
+      setActiveTab('pendientes');
+    }
+    triggerConfetti();
+    showToast(`¡Bienvenido, ${user.nombre}!`, 'success');
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('¿Deseas cerrar sesión en Control de Brandeo?')) {
+      setCurrentUser(null);
+      localStorage.removeItem('brandeo_auth_user');
+      showToast('Sesión cerrada correctamente.', 'info');
+    }
+  };
+
+  const handleAddUser = async (userData) => {
+    if (!db) return;
+    try {
+      await setDoc(doc(db, 'usuarios_brandeo', userData.id), userData);
+      showToast(`Usuario "${userData.nombre}" registrado con éxito.`, 'success');
+    } catch (e) {
+      console.error('Error creating user:', e);
+      showToast('Error al registrar usuario en Firebase.', 'danger');
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!db) return;
+    try {
+      await deleteDoc(doc(db, 'usuarios_brandeo', userId));
+      showToast('Usuario eliminado con éxito.', 'info');
+    } catch (e) {
+      console.error('Error deleting user:', e);
+      showToast('Error al eliminar usuario en Firebase.', 'danger');
+    }
+  };
+
   // Open confirmation modal
   const handleOpenConfirmModal = (eq) => {
     setModalEquipo(eq);
@@ -274,8 +384,10 @@ export default function App() {
   const handleConfirmBrandeo = async (id, extraData = {}) => {
     if (!db) return;
     try {
+      const branderToRecord = extraData.usuarioBrandeo || currentUser?.nombre || activeBrander || 'Técnico de Brandeo';
+
       const brandeoRecord = createBrandeoRecord({
-        usuarioBrandeo: extraData.usuarioBrandeo || activeBrander || 'Técnico de Brandeo',
+        usuarioBrandeo: branderToRecord,
         comentariosBrandeo: extraData.comentariosBrandeo || '',
         tipoBrandeoUsado: extraData.tipoBrandeoUsado || ''
       });
@@ -308,7 +420,7 @@ export default function App() {
     }
   };
 
-  // Update Stock manually
+  // Update Stock manually (Master / Admin only)
   const handleUpdateStock = async (id, newDisponibles) => {
     if (!db) return;
     try {
@@ -323,7 +435,7 @@ export default function App() {
     }
   };
 
-  // Add new machine model to inventory
+  // Add new machine model to inventory (Master / Admin only)
   const handleAddNewModel = async (newModelData) => {
     if (!db) return;
     try {
@@ -338,7 +450,7 @@ export default function App() {
     }
   };
 
-  // Save new weekly request / order
+  // Save new weekly request / order (Master / Admin only)
   const handleCreateSolicitud = async (solicitudData) => {
     if (!db) return;
     try {
@@ -385,7 +497,7 @@ export default function App() {
         fechaRecepcion: info.fechaCorta,
         horaRecepcion: info.horaCorta,
         timestampRecepcion: Date.now(),
-        recibidoPor: activeBrander || 'Técnico de Taller',
+        recibidoPor: currentUser?.nombre || activeBrander || 'Técnico de Taller',
         updatedAt: Date.now()
       });
 
@@ -447,16 +559,17 @@ export default function App() {
     }
   };
 
-  // Prompt user to update default brander name
-  const handleChangeBrander = () => {
-    const newName = window.prompt('Ingresa el nombre de la persona que realiza el brandeo:', activeBrander);
-    if (newName !== null) {
-      const trimmed = newName.trim();
-      setActiveBrander(trimmed);
-      localStorage.setItem('last_brander_name', trimmed);
-      showToast(`Responsable: ${trimmed || 'Sin asignar'}`, 'info');
-    }
-  };
+  // If user is not authenticated, show Login Screen
+  if (!currentUser) {
+    return (
+      <LoginScreen
+        onLogin={handleLogin}
+        users={users}
+      />
+    );
+  }
+
+  const isBrandeador = (currentUser.rol || '').toLowerCase() === 'brandeador';
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -492,8 +605,9 @@ export default function App() {
         toggleTheme={toggleTheme}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        activeBrander={activeBrander}
-        onChangeBrander={handleChangeBrander}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onOpenUsersModal={() => setShowUsersModal(true)}
         isLive={isLive}
         onRefresh={() => window.location.reload()}
       />
@@ -533,6 +647,7 @@ export default function App() {
           unidadesEnTransito={unidadesEnTransito}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          currentUser={currentUser}
         />
 
         {/* Filters and Tabs */}
@@ -553,6 +668,7 @@ export default function App() {
           medioCount={medioCount}
           bajoCount={bajoCount}
           onExportExcel={() => exportBrandeoToExcel(filteredEquipos, `Brandeo_${activeTab}`)}
+          currentUser={currentUser}
         />
 
         {/* Tab Content */}
@@ -560,8 +676,8 @@ export default function App() {
           <div className="card" style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p style={{ fontSize: '1rem', fontWeight: '600' }}>Cargando datos desde Firebase...</p>
           </div>
-        ) : activeTab === 'inventario' ? (
-          /* View 1: Brandeo Disponible / Stock por modelo */
+        ) : (!isBrandeador && activeTab === 'inventario') ? (
+          /* View 1: Brandeo Disponible / Stock por modelo (Master & Admin only) */
           <BrandeoInventarioView
             inventario={inventario}
             solicitudes={solicitudes}
@@ -570,21 +686,21 @@ export default function App() {
             onNavigateToSolicitudes={() => setActiveTab('solicitudes')}
             theme={theme}
           />
-        ) : activeTab === 'solicitudes' ? (
-          /* View 2: Solicitud de Brandeo / Carrito y Control Semanal */
+        ) : (!isBrandeador && activeTab === 'solicitudes') ? (
+          /* View 2: Solicitud de Brandeo / Carrito y Control Semanal (Master & Admin only) */
           <BrandeoSolicitudesView
             inventario={inventario}
             solicitudes={solicitudes}
             onCreateSolicitud={handleCreateSolicitud}
             onRecibirSolicitud={handleRecibirSolicitud}
-            activeBrander={activeBrander}
+            activeBrander={currentUser.nombre}
             theme={theme}
           />
-        ) : activeTab === 'reportes' ? (
-          /* View 3: Weekly and Monthly Analytics */
+        ) : (!isBrandeador && activeTab === 'reportes') ? (
+          /* View 3: Weekly and Monthly Analytics (Master & Admin only) */
           <BrandeoReportesView equipos={equipos} theme={theme} />
         ) : (
-          /* View 4: Panoramic Table & Mobile Cards */
+          /* View 4: Panoramic Table & Mobile Cards (Photo 1 & Photo 3 view) */
           <BrandeoTable
             equipos={filteredEquipos}
             activeTab={activeTab}
@@ -614,14 +730,25 @@ export default function App() {
         Control de Brandeo de Equipos • Instalable como App PWA para Computadoras y Teléfonos Celulares
       </footer>
 
-      {/* Confirmation Modal */}
+      {/* Confirmation Modal (Photo 5: Select kit to discount and confirm) */}
       {modalEquipo && (
         <ConfirmBrandeoModal
           equipo={modalEquipo}
           inventario={inventario}
-          defaultBrander={activeBrander}
+          defaultBrander={currentUser?.nombre || activeBrander}
           onClose={() => setModalEquipo(null)}
           onConfirm={handleConfirmBrandeo}
+        />
+      )}
+
+      {/* Master User Management Modal */}
+      {showUsersModal && currentUser?.rol === 'master' && (
+        <UserManagementModal
+          users={users}
+          currentUser={currentUser}
+          onAddUser={handleAddUser}
+          onDeleteUser={handleDeleteUser}
+          onClose={() => setShowUsersModal(false)}
         />
       )}
     </div>

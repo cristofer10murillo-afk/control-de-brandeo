@@ -6,7 +6,6 @@ import {
   Sparkles, 
   CheckCircle2, 
   AlertCircle, 
-  MapPin, 
   Calendar, 
   User, 
   Tag, 
@@ -66,25 +65,22 @@ export default function BrandeoTable({
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
           <thead style={{ backgroundColor: 'var(--table-header-bg)', color: '#ffffff' }}>
             <tr>
-              <th style={{ padding: '11px 12px', width: '185px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', width: '235px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Confirmación de Brandeo
               </th>
-              <th style={{ padding: '11px 12px', minWidth: '170px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', minWidth: '170px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Equipo / Modelo
               </th>
-              <th style={{ padding: '11px 12px', width: '110px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', width: '120px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Activo
               </th>
-              <th style={{ padding: '11px 12px', width: '120px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', width: '130px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Serie
               </th>
-              <th style={{ padding: '11px 12px', minWidth: '180px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', minWidth: '220px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Cliente
               </th>
-              <th style={{ padding: '11px 12px', width: '130px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
-                Lugar / Ubicación
-              </th>
-              <th style={{ padding: '11px 12px', width: '180px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', minWidth: '180px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Registro y Fecha / Hora
               </th>
             </tr>
@@ -125,23 +121,23 @@ export default function BrandeoTable({
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '6px',
-                          padding: '6px 12px',
+                          gap: '8px',
+                          padding: '7px 14px',
                           backgroundColor: '#8b5cf6',
                           color: '#ffffff',
                           border: 'none',
                           borderRadius: '8px',
-                          fontSize: '0.8rem',
+                          fontSize: '0.82rem',
                           fontWeight: '700',
                           cursor: 'pointer',
-                          boxShadow: '0 2px 6px rgba(139, 92, 246, 0.35)',
+                          boxShadow: '0 2px 8px rgba(139, 92, 246, 0.4)',
                           transition: 'all 0.15s ease',
                           whiteSpace: 'nowrap'
                         }}
                         title="Haz clic aquí para confirmar que el brandeo de este equipo ha sido realizado"
                       >
-                        <Check size={14} strokeWidth={3} />
-                        <span>Confirmar Brandeo</span>
+                        <Check size={15} strokeWidth={3} />
+                        <span>Confirmar Brandeo Realizado</span>
                       </button>
                     ) : isBrandeado ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -211,23 +207,15 @@ export default function BrandeoTable({
 
                   {/* Cliente */}
                   <td style={{ 
-                    padding: '9px 12px', 
+                    padding: '9px 14px', 
                     fontWeight: '700',
                     color: (eq.cliente || '').toUpperCase().includes('TBD') ? (theme === 'dark' ? '#4ade80' : '#15803d') : 'var(--text-main)'
                   }}>
                     {eq.cliente || 'Sin Cliente Asignado'}
                   </td>
 
-                  {/* Lugar */}
-                  <td style={{ padding: '9px 12px', color: 'var(--text-muted)' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                      <MapPin size={13} color="var(--primary)" />
-                      {eq.lugar || eq.ubicacion || 'Taller'}
-                    </span>
-                  </td>
-
                   {/* Registro y Fecha / Hora Exacta */}
-                  <td style={{ padding: '9px 12px' }}>
+                  <td style={{ padding: '9px 14px' }}>
                     {isPendiente ? (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#8b5cf6', fontWeight: '700', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
                         <Clock size={14} />
@@ -320,7 +308,7 @@ export default function BrandeoTable({
               {/* Technical Details Grid */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
+                gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '8px',
                 padding: '10px',
                 borderRadius: '8px',
@@ -335,10 +323,6 @@ export default function BrandeoTable({
                 <div>
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>Serie:</span>
                   <strong style={{ fontFamily: 'var(--font-mono)' }}>{eq.serie || 'N/A'}</strong>
-                </div>
-                <div>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>Lugar:</span>
-                  <span>{eq.lugar || eq.ubicacion || 'Taller'}</span>
                 </div>
                 <div>
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>Estado:</span>
