@@ -10,12 +10,17 @@ export default function ConfirmBrandeoModal({
   onConfirm
 }) {
   const [branderName, setBranderName] = useState(defaultBrander || localStorage.getItem('last_brander_name') || '');
-  const [comentarios, setComentarios] = useState('');
+  const [comentarios, setComentarios] = useState(
+    equipo?.notasBrandeo || equipo?.especificacionesBrandeo || equipo?.comentariosBrandeo || equipo?.comentario || ''
+  );
   const [selectedModelId, setSelectedModelId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Pre-select matching model on mount / equipo change
   useEffect(() => {
+    if (equipo) {
+      setComentarios(equipo.notasBrandeo || equipo.especificacionesBrandeo || equipo.comentariosBrandeo || equipo.comentario || '');
+    }
     if (equipo && inventario.length > 0) {
       const match = findMatchingModel(equipo.tipoEquipo || equipo.modelo, inventario);
       if (match) {

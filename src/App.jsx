@@ -10,6 +10,7 @@ import BrandeoReportesView from './components/BrandeoReportesView';
 import BrandeoInventarioView from './components/BrandeoInventarioView';
 import BrandeoSolicitudesView from './components/BrandeoSolicitudesView';
 import ConfirmBrandeoModal from './components/ConfirmBrandeoModal';
+import BrandeoNotasModal from './components/BrandeoNotasModal';
 import LoginScreen from './components/LoginScreen';
 import UserManagementModal from './components/UserManagementModal';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -55,6 +56,9 @@ export default function App() {
 
   // Confirmation Modal
   const [modalEquipo, setModalEquipo] = useState(null);
+
+  // Notas / Especificaciones Modal
+  const [notasModalEquipo, setNotasModalEquipo] = useState(null);
 
   // PWA banner state
   const [showPWABanner, setShowPWABanner] = useState(true);
@@ -641,6 +645,24 @@ export default function App() {
     }
   };
 
+  // Save or delete notes and specifications for equipment in Firebase
+  const handleSaveNotas = async (id, notas) => {
+    if (!db) return;
+    try {
+      const cleanNote = (notas || '').trim();
+      await updateDoc(doc(db, 'equipos', id), {
+        notasBrandeo: cleanNote,
+        especificacionesBrandeo: cleanNote,
+        comentariosBrandeo: cleanNote,
+        updatedAt: Date.now()
+      });
+      showToast(cleanNote ? 'Especificaciones guardadas correctamente.' : 'Nota eliminada.', 'success');
+    } catch (err) {
+      console.error('Error guardando especificaciones:', err);
+      showToast('Error al guardar las notas en Firebase', 'danger');
+    }
+  };
+
   // If user is not authenticated, show Login Screen
   if (!currentUser) {
     return (
@@ -792,6 +814,7 @@ export default function App() {
             onConfirmBrandeo={handleOpenConfirmModal}
             onToggleRequiereBrandeo={handleToggleRequiereBrandeo}
             onUpdatePrioridad={handleUpdatePrioridad}
+            onOpenNotasModal={(eq) => setNotasModalEquipo(eq)}
             theme={theme}
           />
         )}
@@ -814,6 +837,15 @@ export default function App() {
       }}>
         Control de Brandeo de Equipos • Instalable como App PWA para Computadoras y Teléfonos Celulares
       </footer>
+
+      {/* Notas / Especificaciones Modal (Ventana Emergente para evitar scrollbars) */}
+      {notasModalEquipo && (
+        <BrandeoNotasModal
+          equipo={notasModalEquipo}
+          onClose={() => setNotasModalEquipo(null)}
+          onSave={handleSaveNotas}
+        />
+      )}
 
       {/* Confirmation Modal (Photo 5: Select kit to discount and confirm) */}
       {modalEquipo && (

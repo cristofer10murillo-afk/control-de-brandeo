@@ -10,7 +10,9 @@ import {
   User, 
   Tag, 
   Hash, 
-  Layers 
+  Layers,
+  FileText,
+  Plus
 } from 'lucide-react';
 import BrandeoPriorityBadge from './BrandeoPriorityBadge';
 
@@ -20,6 +22,7 @@ export default function BrandeoTable({
   onConfirmBrandeo,
   onToggleRequiereBrandeo,
   onUpdatePrioridad,
+  onOpenNotasModal,
   theme
 }) {
   if (equipos.length === 0) {
@@ -65,25 +68,28 @@ export default function BrandeoTable({
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
           <thead style={{ backgroundColor: 'var(--table-header-bg)', color: '#ffffff' }}>
             <tr>
-              <th style={{ padding: '11px 14px', width: '235px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', width: '220px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Confirmación de Brandeo
               </th>
-              <th style={{ padding: '11px 14px', minWidth: '160px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', minWidth: '150px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Equipo / Modelo
               </th>
-              <th style={{ padding: '11px 14px', width: '130px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', width: '120px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Prioridad
               </th>
-              <th style={{ padding: '11px 14px', width: '120px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', width: '110px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Activo
               </th>
-              <th style={{ padding: '11px 14px', width: '130px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', width: '110px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Serie
               </th>
-              <th style={{ padding: '11px 14px', minWidth: '220px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', minWidth: '200px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Cliente
               </th>
-              <th style={{ padding: '11px 14px', minWidth: '180px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+              <th style={{ padding: '11px 14px', width: '145px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
+                Notas / Espec.
+              </th>
+              <th style={{ padding: '11px 14px', minWidth: '170px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em', fontSize: '0.78rem' }}>
                 Registro y Fecha / Hora
               </th>
             </tr>
@@ -92,6 +98,7 @@ export default function BrandeoTable({
             {equipos.map(eq => {
               const isBrandeado = eq.brandeoRealizado === true;
               const isPendiente = eq.requiereBrandeo === true;
+              const notaTexto = eq.notasBrandeo || eq.especificacionesBrandeo || eq.comentariosBrandeo || eq.comentario || '';
 
               const prio = (eq.prioridadBrandeo || 'URGENTE').toUpperCase();
               const prioColor = prio === 'MEDIO' ? '#f59e0b' : (prio === 'BAJO' ? '#3b82f6' : '#8b5cf6');
@@ -217,6 +224,63 @@ export default function BrandeoTable({
                     {eq.cliente || 'Sin Cliente Asignado'}
                   </td>
 
+                  {/* Notas / Especificaciones (Ventana Emergente para evitar scrollbars y cortes) */}
+                  <td style={{ padding: '9px 12px' }}>
+                    {notaTexto ? (
+                      <button
+                        type="button"
+                        onClick={() => onOpenNotasModal && onOpenNotasModal(eq)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          backgroundColor: 'rgba(139, 92, 246, 0.14)',
+                          border: '1px solid rgba(139, 92, 246, 0.35)',
+                          color: '#c4b5fd',
+                          fontSize: '0.78rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          maxWidth: '145px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title={`Especificaciones:\n${notaTexto}\n(Clic para abrir ventana emergente completa)`}
+                      >
+                        <FileText size={13} color="#a78bfa" style={{ flexShrink: 0 }} />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {notaTexto}
+                        </span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onOpenNotasModal && onOpenNotasModal(eq)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          backgroundColor: 'transparent',
+                          border: '1px dashed var(--border-color)',
+                          color: 'var(--text-muted)',
+                          fontSize: '0.74rem',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="Agregar especificaciones o notas"
+                      >
+                        <Plus size={11} />
+                        <span>+ Nota</span>
+                      </button>
+                    )}
+                  </td>
+
                   {/* Registro y Fecha / Hora Exacta */}
                   <td style={{ padding: '9px 14px' }}>
                     {isPendiente ? (
@@ -263,6 +327,7 @@ export default function BrandeoTable({
         {equipos.map(eq => {
           const isBrandeado = eq.brandeoRealizado === true;
           const isPendiente = eq.requiereBrandeo === true;
+          const notaTexto = eq.notasBrandeo || eq.especificacionesBrandeo || eq.comentariosBrandeo || eq.comentario || '';
 
           const prio = (eq.prioridadBrandeo || 'URGENTE').toUpperCase();
           const prioColor = prio === 'MEDIO' ? '#f59e0b' : (prio === 'BAJO' ? '#3b82f6' : '#8b5cf6');
@@ -363,6 +428,57 @@ export default function BrandeoTable({
                   )}
                 </div>
               )}
+
+              {/* Notas y Especificaciones (Mobile) */}
+              <div style={{ marginBottom: '12px' }}>
+                {notaTexto ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpenNotasModal && onOpenNotasModal(eq)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(139, 92, 246, 0.12)',
+                      border: '1px solid rgba(139, 92, 246, 0.3)',
+                      color: '#c4b5fd',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <FileText size={14} color="#a78bfa" style={{ flexShrink: 0 }} />
+                    <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: '600' }}>
+                      <strong>Espec:</strong> {notaTexto}
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0 }}>
+                      Ver ↗
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onOpenNotasModal && onOpenNotasModal(eq)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      fontSize: '0.76rem',
+                      cursor: 'pointer',
+                      padding: '2px 0'
+                    }}
+                  >
+                    <Plus size={12} />
+                    <span>+ Agregar especificaciones o notas</span>
+                  </button>
+                )}
+              </div>
 
               {/* Big Touch Action Button for Cellphones */}
               {isPendiente ? (
